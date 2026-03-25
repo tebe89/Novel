@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Novelis v10.5 | Sanctum Tamroni</title>
+    <title>Sanctum Tamroni v11</title>
     <style>
         :root { --gold: #c5a059; --dark: #2c3e50; --bg: #f4f1ea; --paper: #fffcf5; --border: #e2d5bd; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Georgia', serif; background: var(--bg); color: #2c3e50; display: flex; height: 100vh; overflow: hidden; }
         
-        aside { width: 320px; min-width: 320px; background: white; border-right: 2px solid var(--gold); padding: 20px; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 4px 0 15px rgba(0,0,0,0.05); }
+        aside { width: 320px; min-width: 320px; background: white; border-right: 2px solid var(--gold); padding: 20px; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 10; }
         h2 { color: var(--gold); text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; font-size: 1.3rem; }
         fieldset { border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; background: #fafafa; }
         legend { font-size: 0.75rem; font-weight: bold; padding: 0 8px; text-transform: uppercase; color: #666; }
@@ -21,124 +21,126 @@
         .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; text-transform: uppercase; font-size: 0.85rem; transition: 0.2s; }
         .btn-main { background: var(--dark); color: white; }
         .btn-gold { background: var(--gold); color: white; }
-        .btn-reset { background: #eee; color: #666; margin-top: auto; }
+        .btn-reset { background: #f8d7da; color: #721c24; margin-top: auto; }
 
-        main { flex: 1; overflow-y: auto; padding: 40px 20px; background: #dcdde1; display: flex; flex-direction: column; align-items: center; }
+        main { flex: 1; overflow-y: auto; padding: 40px 20px; background: #dcdde1; display: flex; flex-direction: column; align-items: center; position: relative; }
         #workspace { width: 100%; max-width: 850px; }
         
         .welcome { text-align: center; margin-top: 50px; background: white; padding: 50px 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid var(--border); }
         .bab-card { background: var(--paper); border-radius: 15px; padding: 30px; margin-bottom: 30px; border: 1px solid var(--border); box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
-        .bab-title { font-size: 1.6rem; font-weight: bold; color: var(--gold); margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        .bab-narasi { line-height: 2.3; text-align: justify; font-size: 1.25rem; outline: none; white-space: pre-wrap; margin-top: 20px; }
+        .bab-title { font-size: 1.6rem; font-weight: bold; color: var(--gold); margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; outline: none; }
+        .bab-summary { color: #666; font-style: italic; margin-bottom: 15px; border-bottom: 1px dashed #ddd; padding-bottom: 10px; outline: none; }
+        .bab-narasi { line-height: 2.3; text-align: justify; font-size: 1.25rem; outline: none; white-space: pre-wrap; margin-top: 20px; color: #333; }
 
         .loading { display: none; text-align: center; color: var(--gold); font-weight: bold; padding: 20px; font-style: italic; }
+        .error-msg { color: #721c24; background: #f8d7da; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.8rem; display: none; border: 1px solid #f5c6cb; }
+        
         @media (max-width: 768px) { body { flex-direction: column; overflow-y: auto; } aside { width: 100%; height: auto; border-right: none; border-bottom: 4px solid var(--gold); } main { padding: 15px; } }
     </style>
 </head>
 <body>
 
 <aside>
-    <h2>Studio Pro v10.5</h2>
+    <h2>Studio Novel v11</h2>
+    
     <fieldset>
-        <legend>⚙️ Engine</legend>
-        <select id="mod">
-            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-        </select>
-        <label>API Key (Wajib)</label>
-        <input type="password" id="key" placeholder="Masukkan Key Anda">
+        <legend>🔑 Akses</legend>
+        <input type="password" id="key" placeholder="Tempel API Key di sini">
+        <div id="debug" class="error-msg"></div>
     </fieldset>
 
     <fieldset>
-        <legend>1. Judul & Gaya</legend>
+        <legend>1. Konsep</legend>
         <input type="text" id="tit" placeholder="Judul Novel">
-        <input type="text" id="sty" placeholder="Gaya Bahasa/Dialek">
+        <input type="text" id="sty" placeholder="Gaya Bahasa (e.g. Betawi)">
         <textarea id="mem" placeholder="Memory Tokoh & Plot..."></textarea>
     </fieldset>
 
     <fieldset>
-        <legend>2. Alur Bab</legend>
+        <legend>2. Kontrol</legend>
         <input type="number" id="num" value="3" min="1">
         <button class="btn btn-main" onclick="rancang()">1. Rancang Alur Bab</button>
-    </fieldset>
-
-    <fieldset>
-        <legend>3. Berkas</legend>
-        <button class="btn btn-gold" style="font-size: 0.7rem;" onclick="downloadTxt()">Download .TXT</button>
+        <button class="btn btn-gold" style="font-size:0.7rem;" onclick="exportText()">💾 Simpan ke .TXT</button>
     </fieldset>
     
-    <button class="btn btn-reset" onclick="resetAll()">🗑️ Reset Studio</button>
+    <button class="btn btn-reset" onclick="hapusSemua()">🗑️ Reset Permanen</button>
 </aside>
 
 <main>
     <div id="workspace">
         <div class="welcome">
             <h1 style="color:var(--gold); font-size: 2.2rem; margin-bottom: 10px;">Sanctum Tamroni</h1>
-            <p>Aplikasi Penulisan Profesional Online.</p>
+            <p>Masukkan API Key dari AI Studio di sidebar untuk mulai menulis.</p>
         </div>
     </div>
     <div id="wait" class="loading">🧠 AI sedang merajut mahakarya...</div>
 </main>
 
 <script>
-    // Load API Key & Data dari Storage
-    window.onload = () => {
-        if(localStorage.getItem('tamroni_key')) document.getElementById('key').value = localStorage.getItem('tamroni_key');
-        if(localStorage.getItem('tamroni_tit')) document.getElementById('tit').value = localStorage.getItem('tamroni_tit');
-    };
+    // Fitur Auto-Save
+    const fields = ['key', 'tit', 'sty', 'mem'];
+    fields.forEach(f => {
+        document.getElementById(f).value = localStorage.getItem('novel_'+f) || '';
+        document.getElementById(f).oninput = (e) => localStorage.setItem('novel_'+f, e.target.value);
+    });
 
     async function callAI(prompt, isJson) {
         const key = document.getElementById('key').value.trim();
-        if(!key) { alert("Isi API Key dulu!"); return; }
-        localStorage.setItem('tamroni_key', key); // Auto-save key
+        const debug = document.getElementById('debug');
+        debug.style.display = "none";
 
-        const mod = document.getElementById('mod').value;
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${key}`;
+        if(!key) { alert("API Key kosong! Ambil di aistudio.google.com"); return; }
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
         
-        const payload = {
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: isJson ? { response_mime_type: "application/json" } : {}
-        };
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: isJson ? { response_mime_type: "application/json" } : {}
+                })
+            });
 
-        const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        const d = await res.json();
-        if (d.error) throw new Error(d.error.message);
-        return d.candidates[0].content.parts[0].text;
+            const data = await res.json();
+            if (data.error) {
+                debug.innerText = "Info: " + data.error.message;
+                debug.style.display = "block";
+                throw new Error(data.error.message);
+            }
+            return data.candidates[0].content.parts[0].text;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
     }
 
     async function rancang() {
-        const title = document.getElementById('tit').value;
-        if (!title) return alert("Isi judul!");
-        localStorage.setItem('tamroni_tit', title);
+        const tit = document.getElementById('tit').value;
+        if (!tit) return alert("Isi judul!");
 
         document.getElementById('wait').style.display = "block";
         document.getElementById('workspace').innerHTML = "";
 
-        const p = `Buat daftar ${document.getElementById('num').value} bab novel "${title}". Gaya: ${document.getElementById('sty').value}. Memory: ${document.getElementById('mem').value}. JAWAB HANYA JSON: [{"label": "Judul Bab", "ringkasan": "..."}]`;
+        const p = `Buat ${document.getElementById('num').value} bab novel "${tit}". Gaya: ${document.getElementById('sty').value}. Memory: ${document.getElementById('mem').value}. Format JSON: [{"label": "Judul Bab", "ringkasan": "..."}]`;
         
         try {
             const raw = await callAI(p, true);
             const chapters = JSON.parse(raw);
-            let h = `<h1 id="main-title" style="text-align:center; margin-bottom:40px; font-size:2.5rem;">${title}</h1>`;
+            let h = `<h1 style="text-align:center; margin-bottom:40px; font-size:2.5rem;">${tit}</h1>`;
             chapters.forEach((ch, i) => {
                 h += `<div class="bab-card">
                     <div class="bab-title" contenteditable="true" id="t-${i}">${ch.label}</div>
-                    <div style="color:#666; font-style:italic; margin-bottom:15px; border-bottom:1px dashed #ddd; padding-bottom:10px;" id="s-${i}" contenteditable="true">${ch.ringkasan}</div>
+                    <div class="bab-summary" contenteditable="true" id="s-${i}">${ch.ringkasan}</div>
                     <button class="btn btn-gold" style="width:auto; padding:8px 25px;" onclick="tulis(${i}, this)">Tulis Narasi Full</button>
-                    <div id="w-${i}" class="loading">AI sedang menenun...</div>
+                    <div id="w-${i}" class="loading">AI sedang menenun kata...</div>
                     <div class="bab-narasi" id="c-${i}" contenteditable="true"></div>
                 </div>`;
             });
             document.getElementById('workspace').innerHTML = h;
-        } catch (e) { 
-            alert("Gagal. Pastikan API Key benar.");
-            console.error(e);
-        } finally { document.getElementById('wait').style.display = "none"; }
+        } catch (e) { alert("Gagal. Cek kotak merah di sidebar."); }
+        finally { document.getElementById('wait').style.display = "none"; }
     }
 
     async function tulis(i, btn) {
@@ -147,7 +149,7 @@
         btn.style.display = "none";
         document.getElementById(`w-${i}`).style.display = "block";
 
-        const p = `Tulis narasi novel lengkap bab "${t}". Ringkasan alur: ${s}. Gaya bahasa: ${document.getElementById('sty').value}. Memory Tokoh: ${document.getElementById('mem').value}. Tulis sangat panjang, detail, dan emosional.`;
+        const p = `Tulis narasi lengkap bab "${t}". Ringkasan: ${s}. Gaya: ${document.getElementById('sty').value}. Memory: ${document.getElementById('mem').value}. Tulis sangat detail dan emosional.`;
         
         try {
             const res = await callAI(p, false);
@@ -156,20 +158,20 @@
         finally { document.getElementById(`w-${i}`).style.display = "none"; }
     }
 
-    function downloadTxt() {
-        let text = `JUDUL: ${document.getElementById('tit').value}\n\n`;
-        document.querySelectorAll('.bab-card').forEach(card => {
-            text += `\n\n--- ${card.querySelector('.bab-title').innerText} ---\n\n`;
-            text += card.querySelector('.bab-narasi').innerText;
+    function exportText() {
+        let t = `JUDUL: ${document.getElementById('tit').value}\n\n`;
+        document.querySelectorAll('.bab-card').forEach(c => {
+            t += `\n\n--- ${c.querySelector('.bab-title').innerText} ---\n\n`;
+            t += c.querySelector('.bab-narasi').innerText;
         });
-        const blob = new Blob([text], {type: "text/plain"});
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `${document.getElementById('tit').value}.txt`;
-        link.click();
+        const blob = new Blob([t], {type: "text/plain"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${document.getElementById('tit').value || 'Novel'}.txt`;
+        a.click();
     }
 
-    function resetAll() { if(confirm("Hapus semua?")) { localStorage.clear(); location.reload(); } }
+    function hapusSemua() { if(confirm("Hapus semua data?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
