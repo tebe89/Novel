@@ -3,111 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Novelis v10.1</title>
+    <title>Studio Novelis v10.5 | Sanctum Tamroni</title>
     <style>
-        /* FORCE FULLSCREEN - Memaksa Blogger Menyingkir */
-        #header-wrapper, .header-outer, .sidebar-wrapper, .footer-wrapper, .post-footer, .comments, #blog-pager { 
-            display: none !important; 
-        }
-        .main-outer, .content-outer, .post-outer, .post-body { 
-            margin: 0 !important; 
-            padding: 0 !important; 
-            width: 100% !important; 
-            max-width: 100% !important;
-        }
-
-        /* APP STYLING */
         :root { --gold: #c5a059; --dark: #2c3e50; --bg: #f4f1ea; --paper: #fffcf5; --border: #e2d5bd; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Georgia', serif; background: var(--bg); color: #2c3e50; display: flex; height: 100vh; overflow: hidden; }
         
-        body { 
-            font-family: 'Georgia', serif; 
-            background: var(--bg) !important; 
-            color: #2c3e50; 
-            display: flex; 
-            height: 100vh; 
-            width: 100vw;
-            position: fixed; /* Mengunci agar tidak goyang di mobile */
-            top: 0; left: 0;
-            overflow: hidden;
-        }
-        
-        /* SIDEBAR */
-        aside { 
-            width: 320px; 
-            min-width: 320px; 
-            background: white; 
-            border-right: 2px solid var(--gold); 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            overflow-y: auto; 
-            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
-            z-index: 100;
-        }
-        
-        h2 { color: var(--gold); text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; font-size: 1.4rem; }
+        aside { width: 320px; min-width: 320px; background: white; border-right: 2px solid var(--gold); padding: 20px; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 4px 0 15px rgba(0,0,0,0.05); }
+        h2 { color: var(--gold); text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; font-size: 1.3rem; }
         fieldset { border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; background: #fafafa; }
         legend { font-size: 0.75rem; font-weight: bold; padding: 0 8px; text-transform: uppercase; color: #666; }
         
         label { font-size: 0.7rem; font-weight: bold; display: block; margin-top: 8px; color: #888; }
-        input, textarea, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-top: 4px; font-size: 0.9rem; font-family: sans-serif; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-top: 4px; font-size: 0.9rem; }
         textarea { height: 60px; resize: none; }
 
-        /* BUTTONS */
         .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; text-transform: uppercase; font-size: 0.85rem; transition: 0.2s; }
         .btn-main { background: var(--dark); color: white; }
         .btn-gold { background: var(--gold); color: white; }
         .btn-reset { background: #eee; color: #666; margin-top: auto; }
 
-        /* MAIN CONTENT */
-        main { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 40px 20px; 
-            background: #dcdde1; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
-        
+        main { flex: 1; overflow-y: auto; padding: 40px 20px; background: #dcdde1; display: flex; flex-direction: column; align-items: center; }
         #workspace { width: 100%; max-width: 850px; }
         
-        .welcome { text-align: center; margin-top: 50px; background: white; padding: 60px 40px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 1px solid var(--border); }
-        
-        .bab-card { background: var(--paper); border-radius: 20px; padding: 35px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); border: 1px solid var(--border); }
-        .bab-title { font-size: 1.7rem; font-weight: bold; color: var(--gold); margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; outline: none; }
-        .bab-summary { color: #636e72; font-style: italic; margin-bottom: 20px; background: #fffcf0; padding: 15px; border-radius: 10px; border: 1px dashed #d1ccc0; }
-        .bab-narasi { line-height: 2.2; text-align: justify; font-size: 1.3rem; outline: none; white-space: pre-wrap; margin-top: 20px; color: #2d3436; }
+        .welcome { text-align: center; margin-top: 50px; background: white; padding: 50px 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        .bab-card { background: var(--paper); border-radius: 15px; padding: 30px; margin-bottom: 30px; border: 1px solid var(--border); box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .bab-title { font-size: 1.6rem; font-weight: bold; color: var(--gold); margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .bab-narasi { line-height: 2.3; text-align: justify; font-size: 1.25rem; outline: none; white-space: pre-wrap; margin-top: 20px; }
 
-        .loading { display: none; text-align: center; color: var(--gold); font-weight: bold; padding: 20px; font-style: italic; font-size: 1.1rem; }
-        
-        /* RESPONSIVE */
-        @media (max-width: 768px) { 
-            body { flex-direction: column; overflow-y: auto; position: relative; } 
-            aside { width: 100%; height: auto; border-right: none; border-bottom: 4px solid var(--gold); position: relative; } 
-            main { padding: 20px; height: auto; overflow: visible; } 
-        }
+        .loading { display: none; text-align: center; color: var(--gold); font-weight: bold; padding: 20px; font-style: italic; }
+        @media (max-width: 768px) { body { flex-direction: column; overflow-y: auto; } aside { width: 100%; height: auto; border-right: none; border-bottom: 4px solid var(--gold); } main { padding: 15px; } }
     </style>
 </head>
 <body>
 
 <aside>
-    <h2>Studio Novelis v10.1</h2>
-    
+    <h2>Studio Pro v10.5</h2>
     <fieldset>
-        <legend>⚙️ Engine & API</legend>
+        <legend>⚙️ Engine</legend>
         <select id="mod">
-            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Terstabil)</option>
-            <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</option>
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
             <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
         </select>
-        <input type="password" id="key" placeholder="API Key (Kosong = Default)">
+        <label>API Key (Wajib)</label>
+        <input type="password" id="key" placeholder="Masukkan Key Anda">
     </fieldset>
 
     <fieldset>
-        <legend>1. Konsep Cerita</legend>
-        <input type="text" id="tit" placeholder="Judul Novel (Wajib)">
+        <legend>1. Judul & Gaya</legend>
+        <input type="text" id="tit" placeholder="Judul Novel">
         <input type="text" id="sty" placeholder="Gaya Bahasa/Dialek">
         <textarea id="mem" placeholder="Memory Tokoh & Plot..."></textarea>
     </fieldset>
@@ -118,91 +62,114 @@
         <button class="btn btn-main" onclick="rancang()">1. Rancang Alur Bab</button>
     </fieldset>
 
-    <button class="btn btn-reset" onclick="location.reload()">🗑️ Reset Studio</button>
+    <fieldset>
+        <legend>3. Berkas</legend>
+        <button class="btn btn-gold" style="font-size: 0.7rem;" onclick="downloadTxt()">Download .TXT</button>
+    </fieldset>
+    
+    <button class="btn btn-reset" onclick="resetAll()">🗑️ Reset Studio</button>
 </aside>
 
 <main>
     <div id="workspace">
         <div class="welcome">
-            <h1 style="color:var(--gold); font-size: 2.5rem; margin-bottom: 15px;">Sanctum Tamroni</h1>
-            <p>Ruang kreatif murni tanpa gangguan template. <br> Masukkan judul untuk mulai menulis mahakarya Anda.</p>
+            <h1 style="color:var(--gold); font-size: 2.2rem; margin-bottom: 10px;">Sanctum Tamroni</h1>
+            <p>Aplikasi Penulisan Profesional Online.</p>
         </div>
     </div>
     <div id="wait" class="loading">🧠 AI sedang merajut mahakarya...</div>
 </main>
 
 <script>
-    const K_D = "AIzaSyASoPo7TgqE4smxWXXeI0mqAMXVPV4QVU4";
+    // Load API Key & Data dari Storage
+    window.onload = () => {
+        if(localStorage.getItem('tamroni_key')) document.getElementById('key').value = localStorage.getItem('tamroni_key');
+        if(localStorage.getItem('tamroni_tit')) document.getElementById('tit').value = localStorage.getItem('tamroni_tit');
+    };
 
     async function callAI(prompt, isJson) {
-        const key = document.getElementById('key').value.trim() || K_D;
+        const key = document.getElementById('key').value.trim();
+        if(!key) { alert("Isi API Key dulu!"); return; }
+        localStorage.setItem('tamroni_key', key); // Auto-save key
+
         const mod = document.getElementById('mod').value;
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${key}`;
-        const config = isJson ? { response_mime_type: "application/json" } : {};
+        
+        const payload = {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: isJson ? { response_mime_type: "application/json" } : {}
+        };
 
         const res = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: config
-            })
+            body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
-        if (data.error) throw new Error(data.error.message);
-        return data.candidates[0].content.parts[0].text;
+        const d = await res.json();
+        if (d.error) throw new Error(d.error.message);
+        return d.candidates[0].content.parts[0].text;
     }
 
     async function rancang() {
         const title = document.getElementById('tit').value;
-        if (!title) return alert("Isi judul dulu!");
+        if (!title) return alert("Isi judul!");
+        localStorage.setItem('tamroni_tit', title);
 
         document.getElementById('wait').style.display = "block";
         document.getElementById('workspace').innerHTML = "";
 
-        const prompt = `Buat daftar ${document.getElementById('num').value} bab novel "${title}". Gaya: ${document.getElementById('sty').value}. Memory: ${document.getElementById('mem').value}. Format JSON: [{"label": "Judul Bab", "ringkasan": "..."}]`;
-
+        const p = `Buat daftar ${document.getElementById('num').value} bab novel "${title}". Gaya: ${document.getElementById('sty').value}. Memory: ${document.getElementById('mem').value}. JAWAB HANYA JSON: [{"label": "Judul Bab", "ringkasan": "..."}]`;
+        
         try {
-            const raw = await callAI(prompt, true);
+            const raw = await callAI(p, true);
             const chapters = JSON.parse(raw);
-            
-            let html = `<h1 style="text-align:center; margin-bottom:40px; font-size:2.5rem;">${title}</h1>`;
+            let h = `<h1 id="main-title" style="text-align:center; margin-bottom:40px; font-size:2.5rem;">${title}</h1>`;
             chapters.forEach((ch, i) => {
-                html += `
-                <div class="bab-card">
+                h += `<div class="bab-card">
                     <div class="bab-title" contenteditable="true" id="t-${i}">${ch.label}</div>
-                    <div class="bab-summary" id="s-${i}" contenteditable="true">${ch.ringkasan}</div>
-                    <button class="btn btn-gold" style="width:auto; padding:10px 25px;" onclick="tulis(${i}, this)">Tulis Narasi Full</button>
-                    <div id="w-${i}" class="loading">AI sedang menenun kata...</div>
+                    <div style="color:#666; font-style:italic; margin-bottom:15px; border-bottom:1px dashed #ddd; padding-bottom:10px;" id="s-${i}" contenteditable="true">${ch.ringkasan}</div>
+                    <button class="btn btn-gold" style="width:auto; padding:8px 25px;" onclick="tulis(${i}, this)">Tulis Narasi Full</button>
+                    <div id="w-${i}" class="loading">AI sedang menenun...</div>
                     <div class="bab-narasi" id="c-${i}" contenteditable="true"></div>
                 </div>`;
             });
-            document.getElementById('workspace').innerHTML = html;
-        } catch (e) {
-            alert("Error! Klik lagi atau cek koneksi.");
+            document.getElementById('workspace').innerHTML = h;
+        } catch (e) { 
+            alert("Gagal. Pastikan API Key benar.");
+            console.error(e);
         } finally { document.getElementById('wait').style.display = "none"; }
     }
 
     async function tulis(i, btn) {
-        const title = document.getElementById(`t-${i}`).innerText;
-        const sum = document.getElementById(`s-${i}`).innerText;
-        const sty = document.getElementById('sty').value || "Indonesia";
-        const mem = document.getElementById('mem').value;
-
+        const t = document.getElementById(`t-${i}`).innerText;
+        const s = document.getElementById(`s-${i}`).innerText;
         btn.style.display = "none";
         document.getElementById(`w-${i}`).style.display = "block";
 
-        const prompt = `Tulis narasi lengkap bab "${title}". Ringkasan: ${sum}. Gaya: ${sty}. Memory: ${mem}. Tulis sangat detail dan emosional.`;
-
+        const p = `Tulis narasi novel lengkap bab "${t}". Ringkasan alur: ${s}. Gaya bahasa: ${document.getElementById('sty').value}. Memory Tokoh: ${document.getElementById('mem').value}. Tulis sangat panjang, detail, dan emosional.`;
+        
         try {
-            const res = await callAI(prompt, false);
+            const res = await callAI(p, false);
             document.getElementById(`c-${i}`).innerHTML = res.split('\n\n').map(p => `<p>${p}</p>`).join('');
-        } catch (e) {
-            alert("Gagal menulis.");
-            btn.style.display = "block";
-        } finally { document.getElementById(`w-${i}`).style.display = "none"; }
+        } catch (e) { alert("Gagal!"); btn.style.display = "block"; }
+        finally { document.getElementById(`w-${i}`).style.display = "none"; }
     }
+
+    function downloadTxt() {
+        let text = `JUDUL: ${document.getElementById('tit').value}\n\n`;
+        document.querySelectorAll('.bab-card').forEach(card => {
+            text += `\n\n--- ${card.querySelector('.bab-title').innerText} ---\n\n`;
+            text += card.querySelector('.bab-narasi').innerText;
+        });
+        const blob = new Blob([text], {type: "text/plain"});
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${document.getElementById('tit').value}.txt`;
+        link.click();
+    }
+
+    function resetAll() { if(confirm("Hapus semua?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
