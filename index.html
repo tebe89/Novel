@@ -3,181 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanctum Tamroni - Studio Novel v12</title>
+    <title>Sanctum Tamroni - Studio Novel v13</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Cinzel:wght@500;700&display=swap');
-        
-        body { 
-            background-color: #121212; 
-            color: #e0e0e0; 
-            font-family: 'Inter', sans-serif;
-        }
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Inter', sans-serif; }
         .gold-border { border: 1px solid #c5a059; }
         .gold-text { color: #c5a059; font-family: 'Cinzel', serif; }
         .gold-bg { background-color: #c5a059; color: #121212; }
-        .input-dark { 
-            background-color: #1e1e1e; 
-            border: 1px solid #333; 
-            color: #fff;
-            border-radius: 8px;
-        }
-        .input-dark:focus { border-color: #c5a059; outline: none; transition: 0.3s; }
+        .input-dark { background-color: #1e1e1e; border: 1px solid #333; color: #fff; border-radius: 8px; }
+        .input-dark:focus { border-color: #c5a059; outline: none; }
         .novel-font { font-family: 'Crimson Pro', serif; }
-        
-        /* Sidebar styling ala screenshot */
         .sidebar { background-color: #1a1a1a; border-right: 2px solid #c5a059; }
+        .loading-shimmer { background: linear-gradient(90deg, #1e1e1e 25%, #2a2a2a 50%, #1e1e1e 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
 <body class="flex flex-col md:flex-row min-h-screen">
 
-    <div class="sidebar w-full md:w-80 p-6 space-y-8 flex-shrink-0">
-        <div>
-            <h1 class="text-2xl font-bold gold-text border-b border-gray-700 pb-2">Studio Novel v12</h1>
-        </div>
+    <div class="sidebar w-full md:w-80 p-6 space-y-8 flex-shrink-0 overflow-y-auto">
+        <h1 class="text-2xl font-bold gold-text border-b border-gray-700 pb-2">Studio Novel v13</h1>
 
         <div class="space-y-3">
             <p class="text-xs font-bold text-gray-500 tracking-widest uppercase">🔑 AKSES</p>
-            <input type="password" id="apiKey" placeholder="Masukkan Gemini API Key..." class="w-full p-3 input-dark">
+            <input type="password" id="apiKey" placeholder="Gemini API Key..." class="w-full p-3 input-dark">
             <button onclick="checkApi()" id="btnCheck" class="w-full py-2 gold-bg font-bold rounded hover:opacity-90 transition">CEK API KEY</button>
-            
-            <div id="engineWrapper" class="hidden animate-pulse">
+            <div id="engineWrapper" class="hidden">
                 <p class="text-xs font-bold text-gray-500 tracking-widest uppercase mt-4">🤖 PILIH ENGINE</p>
-                <select id="modelSelect" class="w-full p-3 input-dark mt-2 border-yellow-800 text-yellow-500 font-semibold"></select>
+                <select id="modelSelect" class="w-full p-3 input-dark mt-2 text-yellow-500 font-semibold"></select>
             </div>
         </div>
 
         <div class="space-y-3">
             <p class="text-xs font-bold text-gray-500 tracking-widest uppercase">1. KONSEP</p>
             <input type="text" id="novelTitle" placeholder="Judul Novel" class="w-full p-3 input-dark">
-            <textarea id="storyIdea" rows="4" placeholder="Ide Cerita / Premis..." class="w-full p-3 input-dark"></textarea>
+            <textarea id="storyIdea" rows="4" placeholder="Garis besar cerita..." class="w-full p-3 input-dark"></textarea>
         </div>
 
         <div class="space-y-3">
             <p class="text-xs font-bold text-gray-500 tracking-widest uppercase">2. KONTROL</p>
             <div class="flex items-center gap-2">
                 <input type="number" id="chapterCount" value="3" class="w-20 p-3 input-dark text-center">
-                <span class="text-sm text-gray-400">Target Bab</span>
+                <span class="text-sm text-gray-400">Jumlah Bab</span>
             </div>
-            <button onclick="initializeNovel()" class="w-full py-3 bg-blue-900 text-white font-bold rounded-lg border border-blue-400 hover:bg-blue-800">1. RANCANG ALUR BAB</button>
-            <button onclick="downloadAll('txt')" class="w-full py-2 gold-bg font-bold rounded">💾 SIMPAN KE .TXT</button>
-            <button onclick="downloadAll('html')" class="w-full py-2 border border-[#c5a059] gold-text font-bold rounded">🌐 SIMPAN KE .HTML</button>
+            <button onclick="planNovel()" id="btnPlan" class="w-full py-3 bg-blue-900 text-white font-bold rounded-lg border border-blue-400 hover:bg-blue-800">1. RANCANG ALUR & JUDUL</button>
+            <div class="flex gap-2">
+                <button onclick="downloadAll('txt')" class="flex-1 py-2 gold-bg text-xs font-bold rounded">UNDUH TXT</button>
+                <button onclick="downloadAll('html')" class="flex-1 py-2 border border-[#c5a059] gold-text text-xs font-bold rounded">UNDUH HTML</button>
+            </div>
         </div>
     </div>
 
     <div class="flex-1 p-6 md:p-12 overflow-y-auto">
-        <div id="mainPlaceholder" class="h-full flex flex-col items-center justify-center text-center space-y-4">
+        <div id="mainPlaceholder" class="h-full flex flex-col items-center justify-center text-center">
             <div class="p-10 border-2 border-dashed border-gray-800 rounded-3xl max-w-2xl w-full">
-                <h2 class="text-5xl font-bold gold-text mb-4">Sanctum Tamroni</h2>
-                <p class="text-gray-400 text-lg">Masukkan API Key dari AI Studio di sidebar untuk mulai menulis karya agung Anda.</p>
+                <h2 class="text-4xl font-bold gold-text mb-4">Sanctum Tamroni</h2>
+                <p class="text-gray-400">Klik "RANCANG ALUR" untuk membuat kerangka judul dan ringkasan tiap bab secara otomatis.</p>
             </div>
         </div>
 
         <div id="novelWorkspace" class="hidden space-y-8">
-            <div class="flex justify-between items-baseline border-b border-gray-800 pb-4">
-                <h2 id="displayTitle" class="text-4xl font-bold gold-text novel-font">Judul Novel</h2>
-            </div>
-            <div id="chaptersArea" class="space-y-12"></div>
+            <h2 id="displayTitle" class="text-4xl font-bold gold-text novel-font border-b border-gray-800 pb-4"></h2>
+            <div id="chaptersArea" class="space-y-10"></div>
         </div>
     </div>
 
     <script>
-        // Fungsi untuk mengambil daftar model
         async function checkApi() {
             const key = document.getElementById('apiKey').value;
             const btn = document.getElementById('btnCheck');
             const wrapper = document.getElementById('engineWrapper');
             const select = document.getElementById('modelSelect');
-
-            if(!key) return alert("Masukkan API Key terlebih dahulu!");
-
+            if(!key) return alert("API Key kosong!");
             btn.innerText = "MENGHUBUNGKAN...";
-            
             try {
-                // Menarik daftar model resmi dari API Gemini
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
                 const data = await response.json();
-                
                 if (data.models) {
                     select.innerHTML = '';
-                    // Filter hanya model yang mendukung generate content
-                    const availableModels = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent'));
-                    
-                    availableModels.forEach(m => {
+                    data.models.filter(m => m.supportedGenerationMethods.includes('generateContent')).forEach(m => {
                         const opt = document.createElement('option');
                         opt.value = m.name;
-                        // Rapikan tampilan nama model
-                        opt.innerText = m.displayName.replace("Gemini ", "Gemini » "); 
+                        opt.innerText = m.displayName.replace("Gemini ", "Gemini » ");
                         select.appendChild(opt);
                     });
-
                     wrapper.classList.remove('hidden');
-                    wrapper.classList.remove('animate-pulse');
                     btn.innerText = "TERHUBUNG ✓";
                     btn.classList.replace('gold-bg', 'bg-green-700');
-                    btn.style.color = "white";
-                } else {
-                    throw new Error("Invalid Response");
                 }
-            } catch (e) {
-                alert("Gagal memuat engine. Cek kembali API Key Anda.");
-                btn.innerText = "CEK API KEY";
-            }
+            } catch (e) { alert("API Key Salah!"); btn.innerText = "CEK API KEY"; }
         }
 
-        function initializeNovel() {
-            const title = document.getElementById('novelTitle').value || "Karya Tanpa Judul";
-            const count = parseInt(document.getElementById('chapterCount').value);
-            const container = document.getElementById('chaptersArea');
-            
-            document.getElementById('mainPlaceholder').classList.add('hidden');
-            document.getElementById('novelWorkspace').classList.remove('hidden');
-            document.getElementById('displayTitle').innerText = title;
-
-            container.innerHTML = '';
-            
-            // Urutan: Prolog -> Bab 1..N -> Epilog
-            const structure = ['Prolog', ...Array.from({length: count}, (_, i) => `Bab ${i+1}`), 'Epilog'];
-
-            structure.forEach((name, index) => {
-                const id = `ch-${index}`;
-                const section = document.createElement('div');
-                section.className = "bg-[#1a1a1a] p-6 rounded-xl border border-gray-800 shadow-xl";
-                section.innerHTML = `
-                    <div class="flex justify-between items-center mb-4">
-                        <input type="text" value="${name}" id="title-${id}" class="text-2xl font-bold gold-text bg-transparent border-b border-gray-700 outline-none w-1/2 novel-font">
-                        <button onclick="generateChapter('${id}')" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-full text-sm font-bold transition">
-                            TULIS CERITA
-                        </button>
-                    </div>
-                    <textarea id="content-${id}" rows="12" class="w-full p-5 input-dark novel-font text-xl leading-relaxed resize-none" placeholder="Hasil prosa AI akan muncul di sini..."></textarea>
-                `;
-                container.appendChild(section);
-            });
-        }
-
-        async function generateChapter(id) {
+        async function planNovel() {
             const key = document.getElementById('apiKey').value;
             const model = document.getElementById('modelSelect').value;
-            const novelTitle = document.getElementById('novelTitle').value;
+            const title = document.getElementById('novelTitle').value || "Karya Tanpa Judul";
             const idea = document.getElementById('storyIdea').value;
-            const chapterTitle = document.getElementById(`title-${id}`).value;
-            const textArea = document.getElementById(`content-${id}`);
+            const count = parseInt(document.getElementById('chapterCount').value);
+            const btnPlan = document.getElementById('btnPlan');
 
-            if(!key || !model) return alert("API Key dan Engine harus siap!");
-            
-            textArea.value = "Menulis bab secara profesional...";
+            if(!key || !model) return alert("Set API Key dan Pilih Engine dulu!");
+            if(!idea) return alert("Isi ide ceritanya dulu!");
 
-            const prompt = `Anda adalah seorang penulis novel profesional peraih penghargaan literasi.
-            Tuliskan isi cerita untuk bagian: ${chapterTitle}
-            Dari novel berjudul: ${novelTitle}
-            Premis/Ide: ${idea}
+            btnPlan.innerText = "MERANCANG ALUR...";
+            btnPlan.disabled = true;
 
-            ATURAN:
-            - HANYA TULIS CERITA MURNI.
-            - Dilarang memberikan salam pengantar, penjelasan, atau penutup apapun.
-            - Gunakan deskripsi yang kaya, gaya bahasa sastra yang indah, dan dialog yang natural.
-            - Pastikan ini adalah hasil karya murni tanpa instruksi AI di dalam teksnya.`;
+            const prompt = `Buatlah kerangka novel untuk judul "${title}" dengan ide: ${idea}.
+            Buatlah struktur yang terdiri dari: 1 Prolog, ${count} Bab Utama, dan 1 Epilog.
+            Format output harus JSON murni seperti ini tanpa penjelasan:
+            [
+              {"label": "Prolog", "judul": "Judul Prolog", "ringkasan": "Ringkasan alur prolog..."},
+              {"label": "Bab 1", "judul": "Judul Bab 1", "ringkasan": "Ringkasan alur bab 1..."},
+              ...
+            ]`;
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${key}`, {
@@ -186,10 +124,85 @@
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
                 const data = await response.json();
-                const result = data.candidates[0].content.parts[0].text;
-                textArea.value = result.trim();
+                let rawText = data.candidates[0].content.parts[0].text;
+                // Membersihkan markdown jika AI bandel kasih ```json
+                const cleanJson = rawText.replace(/```json|```/g, "").trim();
+                const plan = JSON.parse(cleanJson);
+
+                renderWorkspace(plan, title);
             } catch (e) {
-                textArea.value = "Error: Terjadi kendala saat menghubungi AI. Pastikan kuota API aktif.";
+                alert("Gagal merancang alur. Pastikan koneksi aman.");
+                console.error(e);
+            } finally {
+                btnPlan.innerText = "1. RANCANG ALUR & JUDUL";
+                btnPlan.disabled = false;
+            }
+        }
+
+        function renderWorkspace(plan, title) {
+            document.getElementById('mainPlaceholder').classList.add('hidden');
+            const ws = document.getElementById('novelWorkspace');
+            const area = document.getElementById('chaptersArea');
+            document.getElementById('displayTitle').innerText = title;
+            ws.classList.remove('hidden');
+            area.innerHTML = '';
+
+            plan.forEach((item, index) => {
+                const id = `ch-${index}`;
+                const div = document.createElement('div');
+                div.className = "bg-[#1a1a1a] p-6 rounded-xl border border-gray-800 shadow-xl space-y-4";
+                div.innerHTML = `
+                    <div class="flex flex-col md:flex-row justify-between gap-4">
+                        <div class="flex-1 space-y-2">
+                            <div class="flex gap-2 items-center">
+                                <span class="text-xs gold-bg px-2 py-0.5 font-bold rounded">${item.label}</span>
+                                <input type="text" id="title-${id}" value="${item.judul}" class="w-full text-xl font-bold gold-text bg-transparent border-b border-gray-700 outline-none novel-font">
+                            </div>
+                            <textarea id="summary-${id}" class="w-full p-2 text-xs input-dark text-gray-400 italic" rows="2" placeholder="Ringkasan alur...">${item.ringkasan}</textarea>
+                        </div>
+                        <button onclick="generateFullChapter('${id}')" class="h-fit bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg text-sm font-bold transition whitespace-nowrap">
+                            TULIS CERITA
+                        </button>
+                    </div>
+                    <textarea id="content-${id}" rows="10" class="w-full p-5 input-dark novel-font text-lg leading-relaxed resize-none" placeholder="Hasil cerita murni..."></textarea>
+                `;
+                area.appendChild(div);
+            });
+        }
+
+        async function generateFullChapter(id) {
+            const key = document.getElementById('apiKey').value;
+            const model = document.getElementById('modelSelect').value;
+            const novelTitle = document.getElementById('novelTitle').value;
+            const chapterTitle = document.getElementById(`title-${id}`).value;
+            const summary = document.getElementById(`summary-${id}`).value;
+            const textArea = document.getElementById(`content-${id}`);
+
+            textArea.value = "AI Penulis Profesional sedang merangkai kata...";
+            textArea.classList.add('loading-shimmer');
+
+            const prompt = `Anda adalah penulis novel profesional. Tuliskan isi cerita (prosa) yang lengkap dan mendalam.
+            Judul Novel: ${novelTitle}
+            Bagian: ${chapterTitle}
+            Alur yang harus diikuti: ${summary}
+
+            KETENTUAN:
+            1. HANYA TULIS CERITA MURNI. Tanpa kata pengantar, tanpa penjelasan AI.
+            2. Gunakan Bahasa Indonesia yang sangat deskriptif, emosional, dan elegan.
+            3. Fokus pada aksi, dialog, dan suasana.`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                textArea.value = data.candidates[0].content.parts[0].text.trim();
+            } catch (e) {
+                textArea.value = "Gagal menulis. Coba lagi.";
+            } finally {
+                textArea.classList.remove('loading-shimmer');
             }
         }
 
@@ -198,25 +211,17 @@
             const textareas = document.querySelectorAll('[id^="content-"]');
             const titles = document.querySelectorAll('[id^="title-"]');
             let content = "";
-
             if(format === 'html') {
-                content = `<html><head><style>body{font-family:serif; line-height:1.8; max-width:700px; margin:auto; padding:50px; background:#f4f1ea; color:#222; text-align:justify;} h1{text-align:center; color:#8b4513;} h2{border-bottom:1px solid #ccc; margin-top:40px; color:#5d4037;} .ch{white-space:pre-wrap; margin-bottom:50px;}</style></head><body><h1>${novelTitle}</h1>`;
-                titles.forEach((t, i) => {
-                    content += `<h2>${t.value}</h2><div class="ch">${textareas[i].value}</div>`;
-                });
+                content = `<html><body style="font-family:serif;max-width:700px;margin:auto;padding:50px;text-align:justify;line-height:1.8;"><h1>${novelTitle}</h1>`;
+                titles.forEach((t, i) => content += `<h2>${t.value}</h2><div style="white-space:pre-wrap;">${textareas[i].value}</div>`);
                 content += "</body></html>";
             } else {
-                titles.forEach((t, i) => {
-                    content += `\n\n=== ${t.value} ===\n\n${textareas[i].value}\n\n`;
-                });
+                titles.forEach((t, i) => content += `\n\n=== ${t.value} ===\n\n${textareas[i].value}\n\n`);
             }
-
             const blob = new Blob([content], { type: format === 'html' ? 'text/html' : 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `${novelTitle}.${format}`;
-            a.click();
+            a.href = url; a.download = `${novelTitle}.${format}`; a.click();
         }
     </script>
 </body>
