@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEBE STORY MAKER v16 - Multi Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Cinzel:wght@500;700&display=swap');
+        body { background-color: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; }
+        .gold-text { color: #c5a059; font-family: 'Cinzel', serif; }
+        .gold-bg { background-color: #c5a059; color: #121212; }
+        .input-dark { background-color: #161616; border: 1px solid #222; color: #fff; border-radius: 6px; font-size: 0.8rem; }
+        .input-dark:focus { border-color: #c5a059; outline: none; background-color: #1a1a1a; }
+        .sidebar { background-color: #111; border-right: 1px solid #222; width: 320px; }
+        @media (max-width: 768px) { .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #222; } }
+        .novel-font { font-family: 'Crimson Pro', serif; }
+        .shimmer { background: linear-gradient(90deg, #161616 25%, #2a2a2a 50%, #161616 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+</head>
+<body class="flex flex-col md:flex-row min-h-screen">
+
+    <div class="sidebar p-5 space-y-6 flex-shrink-0 overflow-y-auto h-screen">
+        <h1 class="text-xl font-bold gold-text border-b border-gray-800 pb-2">Studio Novel v16</h1>
+
+        <div class="space-y-3">
+            <span class="text-[10px] font-black text-gray-500 tracking-widest uppercase">🔑 Pilih Provider AI</span>
+            <select id="provider" onchange="switchProvider()" class="w-full p-2 input-dark border-blue-900/50 text-blue-400 font-bold">
+                <option value="gemini">Google Gemini</option>
+                <option value="openai">OpenAI (ChatGPT)</option>
+                <option value="deepseek">DeepSeek AI</option>
+            </select>
+            
+            <input type="password" id="apiKey" placeholder="Masukkan API Key..." class="w-full p-2 input-dark">
+            <button onclick="checkAndSaveApi()" id="btnCheck" class="w-full py-2 gold-bg text-[10px] font-bold rounded hover:opacity-90">HUBUNGKAN ENGINE</button>
+            
+            <div id="engineWrapper" class="hidden">
+                <select id="modelSelect" class="w-full p-2 input-dark text-yellow-500 font-semibold border-yellow-900/30"></select>
+            </div>
+        </div>
+
+        <div class="space-y-2 pt-2 border-t border-gray-800">
+            <span class="text-[10px] font-black text-gray-500 uppercase">1. Konsep</span>
+            <input type="text" id="novelTitle" placeholder="Judul Novel" class="w-full p-2 input-dark">
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="genre" placeholder="Genre" class="p-2 input-dark">
+                <input type="text" id="style" placeholder="Gaya Bahasa" class="p-2 input-dark">
+            </div>
+            <textarea id="storyIdea" rows="3" placeholder="Ide Cerita..." class="w-full p-2 input-dark"></textarea>
+        </div>
+
+        <div class="space-y-2">
+            <span class="text-[10px] font-black text-gray-500 uppercase">2. Struktur</span>
+            <div class="flex items-center justify-between p-2 input-dark">
+                <span class="text-[10px]">Target Bab:</span>
+                <input type="number" id="chapterCount" value="3" class="w-10 bg-transparent text-center font-bold gold-text">
+            </div>
+            <button onclick="planNovel()" id="btnPlan" class="w-full py-3 bg-blue-900 text-white text-[10px] font-bold rounded-lg border border-blue-500">RANCANG ALUR NOVEL</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-4">
+            <button onclick="downloadAll('txt')" class="py-2 bg-gray-900 text-[9px] font-bold rounded">UNDUH TXT</button>
+            <button onclick="downloadAll('html')" class="py-2 border border-[#c5a059] gold-text text-[9px] font-bold rounded">UNDUH HTML</button>
+        </div>
+    </div>
+
+    <div class="flex-1 p-6 md:p-10 overflow-y-auto">
+        <div id="mainPlaceholder" class="h-full flex flex-col items-center justify-center text-center">
+            <div class="p-10 border border-gray-900 rounded-[2.5rem] max-w-lg w-full bg-[#111]/30">
+                <h2 class="text-4xl font-bold gold-text mb-4">Tebe Story Maker</h2>
+                <p class="text-gray-500 text-sm italic novel-font">"Tiga kekuatan AI dalam satu genggaman. Pilih senjatamu dan tuliskan sejarahmu."</p>
+            </div>
+        </div>
+
+        <div id="novelWorkspace" class="hidden space-y-10 max-w-4xl mx-auto">
+            <div class="text-center border-b border-gray-900 pb-8">
+                <h2 id="displayTitle" class="text-5xl font-bold gold-text novel-font"></h2>
+                <p id="displayMeta" class="text-[10px] text-gray-600 tracking-[0.3em] uppercase mt-2"></p>
+            </div>
+            <div id="chaptersArea" class="space-y-12"></div>
+        </div>
+    </div>
+
+    <script>
+        // Load Saved Keys
+        function switchProvider() {
+            const provider = document.getElementById('provider').value;
+            const savedKey = localStorage.getItem('tebe_key_' + provider);
+            document.getElementById('apiKey').value = savedKey || "";
+            document.getElementById('engineWrapper').classList.add('hidden');
+            document.getElementById('btnCheck').classList.replace('bg-green-800', 'gold-bg');
+            document.getElementById('btnCheck').innerText = "HUBUNGKAN ENGINE";
+        }
+        window.onload = switchProvider;
+
+        async function checkAndSaveApi() {
+            const provider = document.getElementById('provider').value;
+            const key = document.getElementById('apiKey').value;
+            const btn = document.getElementById('btnCheck');
+            const select = document.getElementById('modelSelect');
+
+            if(!key) return alert("Masukkan Key!");
+            btn.innerText = "MENGHUBUNGKAN...";
+
+            try {
+                if(provider === 'gemini') {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+                    const data = await res.json();
+                    select.innerHTML = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent'))
+                        .map(m => `<option value="${m.name}">${m.displayName.replace("Gemini ","")}</option>`).join('');
+                } else if(provider === 'openai') {
+                    select.innerHTML = `<option value="gpt-4o">GPT-4o (Terbaru)</option><option value="gpt-4-turbo">GPT-4 Turbo</option><option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>`;
+                } else if(provider === 'deepseek') {
+                    select.innerHTML = `<option value="deepseek-chat">DeepSeek-V3</option><option value="deepseek-reasoner">DeepSeek-R1 (Logika Tinggi)</option>`;
+                }
+
+                localStorage.setItem('tebe_key_' + provider, key);
+                document.getElementById('engineWrapper').classList.remove('hidden');
+                btn.innerText = "TERHUBUNG ✓";
+                btn.classList.replace('gold-bg', 'bg-green-800');
+                btn.style.color = "white";
+            } catch (e) { alert("Key Salah!"); btn.innerText = "HUBUNGKAN ENGINE"; }
+        }
+
+        async function callAI(prompt, isJson = false) {
+            const provider = document.getElementById('provider').value;
+            const key = document.getElementById('apiKey').value;
+            const model = document.getElementById('modelSelect').value;
+
+            if(provider === 'gemini') {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${key}`, {
+                    method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await res.json();
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                // OpenAI & DeepSeek menggunakan format yang sama
+                const url = provider === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://api.deepseek.com/chat/completions';
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [{ role: "user", content: prompt }],
+                        response_format: isJson ? { type: "json_object" } : undefined
+                    })
+                });
+                const data = await res.json();
+                return data.choices[0].message.content;
+            }
+        }
+
+        async function planNovel() {
+            const idea = document.getElementById('storyIdea').value;
+            if(!idea) return alert("Isi ide cerita!");
+            document.getElementById('btnPlan').innerText = "AI SEDANG MERANCANG...";
+            
+            const prompt = `Buat kerangka novel JSON (1 Prolog, ${document.getElementById('chapterCount').value} Bab, 1 Epilog). 
+            Judul: ${document.getElementById('novelTitle').value}. Genre: ${document.getElementById('genre').value}.
+            Format: [{"label":"Prolog","judul":"...","ringkasan":"..."}] (Hanya JSON!)`;
+
+            try {
+                const raw = await callAI(prompt, true);
+                const plan = JSON.parse(raw.replace(/```json|```/g, ""));
+                renderWorkspace(plan);
+            } catch (e) { alert("Gagal merancang."); }
+            document.getElementById('btnPlan').innerText = "RANCANG ALUR NOVEL";
+        }
+
+        function renderWorkspace(plan) {
+            document.getElementById('mainPlaceholder').classList.add('hidden');
+            const area = document.getElementById('chaptersArea');
+            document.getElementById('displayTitle').innerText = document.getElementById('novelTitle').value;
+            document.getElementById('displayMeta').innerText = `${document.getElementById('genre').value} • GAYA: ${document.getElementById('style').value}`;
+            document.getElementById('novelWorkspace').classList.remove('hidden');
+            area.innerHTML = plan.map((item, i) => `
+                <div class="bg-[#111] p-6 rounded-2xl border border-gray-900 space-y-4">
+                    <div class="flex flex-col md:flex-row justify-between gap-4 border-b border-gray-800 pb-4">
+                        <div class="flex-1">
+                            <span class="text-[9px] gold-text font-bold uppercase">${item.label}</span>
+                            <input type="text" id="title-ch-${i}" value="${item.judul}" class="w-full text-lg font-bold bg-transparent outline-none novel-font">
+                            <textarea id="summary-ch-${i}" class="w-full p-2 text-[10px] input-dark text-gray-500 italic" rows="2">${item.ringkasan}</textarea>
+                        </div>
+                        <button onclick="generateChapter(${i})" class="h-fit bg-white text-black px-5 py-2 rounded-full text-[10px] font-black hover:bg-[#c5a059]">TULIS BAB</button>
+                    </div>
+                    <textarea id="content-ch-${i}" rows="8" class="w-full p-4 input-dark novel-font text-lg leading-relaxed resize-none shadow-inner" placeholder="Prosa cerita..."></textarea>
+                </div>
+            `).join('');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function generateChapter(i) {
+            const textArea = document.getElementById(`content-ch-${i}`);
+            textArea.value = "AI sedang menulis cerita murni...";
+            textArea.classList.add('shimmer');
+
+            const prompt = `Tulis isi novel murni tanpa penjelasan AI.
+            Gaya Bahasa: ${document.getElementById('style').value}.
+            Bagian: ${document.getElementById(`title-ch-${i}`).value}.
+            Alur: ${document.getElementById(`summary-ch-${i}`).value}.`;
+
+            try {
+                textArea.value = await callAI(prompt);
+            } catch (e) { textArea.value = "Gagal menulis."; }
+            textArea.classList.remove('shimmer');
+        }
+
+        function downloadAll(format) {
+            const title = document.getElementById('novelTitle').value || 'TebeStory';
+            const texts = Array.from(document.querySelectorAll('[id^="content-ch-"]')).map(t => t.value);
+            const titles = Array.from(document.querySelectorAll('[id^="title-ch-"]')).map(t => t.value);
+            let res = format === 'html' ? `<html><body style="font-family:serif;max-width:700px;margin:auto;padding:50px;line-height:2;text-align:justify;"><h1>${title}</h1>` : `=== ${title} ===\n\n`;
+            titles.forEach((t, i) => {
+                res += format === 'html' ? `<h2>${t}</h2><p style="white-space:pre-wrap;">${texts[i]}</p>` : `\n[ ${t} ]\n\n${texts[i]}\n\n`;
+            });
+            const blob = new Blob([res], { type: format === 'html' ? 'text/html' : 'text/plain' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${title}.${format}`; a.click();
+        }
+    </script>
+</body>
+</html>
+
