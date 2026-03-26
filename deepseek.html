@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEBE STORY MAKER - DeepSeek Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Cinzel:wght@500;700&display=swap');
+        
+        body { background-color: #0f0f0f; color: #e0e0e0; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .gold-text { color: #c5a059; font-family: 'Cinzel', serif; }
+        .gold-bg { background-color: #c5a059; color: #121212; }
+        .input-dark { background-color: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 6px; font-size: 0.8rem; }
+        .input-dark:focus { border-color: #c5a059; outline: none; }
+        .novel-font { font-family: 'Crimson Pro', serif; }
+
+        /* Sidebar & Workspace Independen */
+        .sidebar { background-color: #141414; border-right: 1px solid #333; width: 320px; height: 100vh; overflow-y: auto; flex-shrink: 0; padding: 20px; scrollbar-width: thin; }
+        .main-content { flex: 1; height: 100vh; overflow-y: auto; background-color: #0a0a0a; scrollbar-width: thin; }
+
+        @media (max-width: 768px) { 
+            body { overflow: auto; }
+            .sidebar { width: 100%; height: auto; overflow: visible; border-right: none; border-bottom: 1px solid #333; }
+            .main-content { height: auto; overflow: visible; }
+        }
+
+        .shimmer { background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .sidebar-footer-spacer { height: 120px; width: 100%; }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex flex-col md:flex-row min-h-screen">
+
+    <div class="sidebar">
+        <div class="space-y-6">
+            <h1 class="text-xl font-bold gold-text border-b border-gray-800 pb-2">TEBE STORY MAKER</h1>
+            <p class="text-[9px] text-gray-500 -mt-4 italic">DeepSeek Edition v1.0</p>
+
+            <div class="space-y-3">
+                <span class="text-[10px] font-black text-gray-500 uppercase flex justify-between">🔑 DeepSeek Access <span id="savedTag" class="hidden text-green-600 font-bold uppercase tracking-tighter">Saved</span></span>
+                <input type="password" id="apiKey" placeholder="Masukkan DeepSeek API Key..." class="w-full p-2 input-dark border-blue-900/30 text-blue-400">
+                <button type="button" onclick="checkAndSaveApi()" id="btnCheck" class="w-full py-2 gold-bg text-xs font-bold rounded hover:opacity-90 transition">HUBUNGKAN API</button>
+                <div id="engineWrapper" class="hidden">
+                    <select id="modelSelect" class="w-full p-2 input-dark text-yellow-500 font-semibold border-yellow-900/30">
+                        <option value="deepseek-reasoner">DeepSeek-R1 (Best for Novel)</option>
+                        <option value="deepseek-chat">DeepSeek-V3 (Faster)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <span class="text-[10px] font-black text-gray-500 uppercase">1. Konsep Cerita</span>
+                <input type="text" id="novelTitle" placeholder="Judul Novel" class="w-full p-2 input-dark">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="genre" placeholder="Genre" class="p-2 input-dark">
+                    <input type="text" id="style" placeholder="Gaya Bahasa" class="p-2 input-dark">
+                </div>
+                <textarea id="storyIdea" rows="3" placeholder="Ide Cerita Utama..." class="w-full p-2 input-dark"></textarea>
+            </div>
+
+            <div class="space-y-2">
+                <span class="text-[10px] font-black text-gray-500 uppercase">2. Struktur</span>
+                <div class="flex items-center justify-between p-2 input-dark">
+                    <span class="text-[10px]">Jumlah Bab:</span>
+                    <input type="number" id="chapterCount" value="3" class="w-10 bg-transparent text-center font-bold gold-text outline-none">
+                </div>
+                <button type="button" onclick="planNovel()" id="btnPlan" class="w-full py-3 bg-blue-900 text-white text-[10px] font-bold rounded-lg border border-blue-500 hover:bg-blue-800 transition shadow-lg">RANCANG ALUR</button>
+            </div>
+
+            <div class="space-y-3 pt-4 border-t border-gray-800 text-center">
+                <span class="text-[10px] font-black text-gray-500 uppercase">Ekspor Keseluruhan</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="downloadAll('txt')" class="py-2 bg-gray-800 text-[10px] font-bold rounded border border-gray-700">FULL .TXT</button>
+                    <button onclick="downloadAll('html')" class="py-2 border border-[#c5a059] gold-text text-[10px] font-bold rounded">FULL .HTML</button>
+                </div>
+            </div>
+
+            <div class="sidebar-footer-spacer"></div>
+        </div>
+    </div>
+
+    <div class="main-content p-6 md:p-10">
+        <div id="mainPlaceholder" class="h-full flex flex-col items-center justify-center text-center">
+            <div class="p-10 border border-gray-900 rounded-[2.5rem] max-w-lg w-full bg-[#111]/30">
+                <h2 class="text-4xl font-bold gold-text mb-4">Tebe Story Maker</h2>
+                <p class="text-gray-400 text-sm novel-font italic leading-relaxed">"DeepSeek Edition: Dirancang khusus untuk menghasilkan narasi sastra yang mendalam dan logis."</p>
+            </div>
+        </div>
+
+        <div id="novelWorkspace" class="hidden space-y-10 max-w-4xl mx-auto">
+            <div class="text-center border-b border-gray-900 pb-8">
+                <h2 id="displayTitle" class="text-5xl font-bold gold-text novel-font"></h2>
+                <p id="displayMeta" class="text-[10px] text-gray-600 tracking-[0.3em] uppercase mt-2"></p>
+            </div>
+            <div id="chaptersArea" class="space-y-12 pb-20"></div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = () => {
+            const savedKey = localStorage.getItem('tebe_deepseek_key');
+            if (savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+                document.getElementById('savedTag').classList.remove('hidden');
+                document.getElementById('engineWrapper').classList.remove('hidden');
+            }
+        };
+
+        async function checkAndSaveApi() {
+            const key = document.getElementById('apiKey').value;
+            const btn = document.getElementById('btnCheck');
+            if(!key) return alert("Isi API Key DeepSeek!");
+            
+            btn.innerText = "MENYAMBUNG...";
+            try {
+                // DeepSeek tidak memiliki endpoint daftar model semudah Gemini, 
+                // Jadi kita tes dengan request simpel
+                const res = await fetch('https://api.deepseek.com/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                    body: JSON.stringify({ model: "deepseek-chat", messages: [{role:"user", content:"hi"}], max_tokens: 5 })
+                });
+                const data = await res.json();
+                if(data.choices) {
+                    localStorage.setItem('tebe_deepseek_key', key);
+                    document.getElementById('savedTag').classList.remove('hidden');
+                    document.getElementById('engineWrapper').classList.remove('hidden');
+                    btn.innerText = "TERHUBUNG ✓";
+                    btn.className = "w-full py-2 bg-green-800 text-white text-xs font-bold rounded";
+                } else { throw new Error(); }
+            } catch (e) { alert("Key salah atau koneksi DeepSeek bermasalah."); btn.innerText = "HUBUNGKAN API"; }
+        }
+
+        async function callDeepSeek(prompt, isJson = false) {
+            const key = document.getElementById('apiKey').value;
+            const model = document.getElementById('modelSelect').value;
+            
+            const res = await fetch('https://api.deepseek.com/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                body: JSON.stringify({ 
+                    model: model, 
+                    messages: [
+                        { role: "system", content: "Anda adalah penulis novel profesional kaliber internasional yang jago narasi deskriptif dan emosional." },
+                        { role: "user", content: prompt }
+                    ],
+                    temperature: 0.8
+                })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error.message);
+            
+            let content = data.choices[0].message.content;
+            // Bersihkan tag pemikiran R1 (<think>...</think>)
+            return content.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+        }
+
+        async function planNovel() {
+            const btn = document.getElementById('btnPlan');
+            const title = document.getElementById('novelTitle').value || "Karya Tebe";
+            const idea = document.getElementById('storyIdea').value;
+            if(!idea) return alert("Isi ide cerita!");
+
+            btn.innerText = "MERANCANG..."; btn.disabled = true;
+
+            const prompt = `Buat kerangka novel JSON untuk judul "${title}". Ide: ${idea}. Buat 1 Prolog, ${document.getElementById('chapterCount').value} Bab, dan 1 Epilog. 
+            HANYA berikan output JSON murni tanpa penjelasan: [{"label":"Prolog","judul":"...","ringkasan":"..."},...]`;
+
+            try {
+                let raw = await callDeepSeek(prompt);
+                let clean = raw.replace(/```json|```/g, "").trim();
+                renderWorkspace(JSON.parse(clean), title);
+            } catch (e) { alert("Gagal merancang alur DeepSeek."); }
+            finally { btn.innerText = "RANCANG ALUR"; btn.disabled = false; }
+        }
+
+        function renderWorkspace(plan, title) {
+            document.getElementById('mainPlaceholder').classList.add('hidden');
+            const area = document.getElementById('chaptersArea');
+            document.getElementById('displayTitle').innerText = title;
+            document.getElementById('displayMeta').innerText = `${document.getElementById('genre').value} • GAYA: ${document.getElementById('style').value}`;
+            document.getElementById('novelWorkspace').classList.remove('hidden');
+            
+            area.innerHTML = plan.map((item, i) => `
+                <div class="bg-[#111] p-6 rounded-2xl border border-gray-900 space-y-4 shadow-2xl">
+                    <div class="flex flex-col md:flex-row justify-between gap-4 border-b border-gray-800 pb-4">
+                        <div class="flex-1">
+                            <span class="text-[9px] gold-text font-bold uppercase">${item.label}</span>
+                            <input type="text" id="title-ch-${i}" value="${item.judul}" class="w-full text-lg font-bold bg-transparent outline-none novel-font">
+                            <textarea id="summary-ch-${i}" class="w-full p-2 text-[10px] input-dark text-gray-400 italic" rows="2">${item.ringkasan}</textarea>
+                        </div>
+                        <button onclick="generateChapter(${i})" class="h-fit bg-white text-black px-6 py-2 rounded-full text-[10px] font-black hover:bg-[#c5a059] transition">TULIS BAB</button>
+                    </div>
+                    <textarea id="content-ch-${i}" rows="12" class="w-full p-4 input-dark novel-font text-lg leading-relaxed resize-none border-none" placeholder="Narasi DeepSeek akan muncul di sini..."></textarea>
+                    <div class="flex justify-end gap-2 border-t border-gray-800 pt-3">
+                        <button onclick="downloadSingle(${i}, '${item.label}', 'txt')" class="text-[9px] bg-gray-800 px-3 py-1 rounded text-gray-400">TXT</button>
+                        <button onclick="downloadSingle(${i}, '${item.label}', 'html')" class="text-[9px] border border-gray-800 px-3 py-1 rounded text-gray-400">HTML</button>
+                    </div>
+                </div>
+            `).join('');
+            document.querySelector('.main-content').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function generateChapter(i) {
+            const textArea = document.getElementById(`content-ch-${i}`);
+            textArea.value = "DeepSeek sedang merangkai narasi panjang..."; textArea.classList.add('shimmer');
+            
+            const prompt = `Tulis isi novel murni. Gaya: ${document.getElementById('style').value}. Judul Bab: ${document.getElementById(`title-ch-${i}`).value}. Alur: ${document.getElementById(`summary-ch-${i}`).value}. 
+            KETENTUAN: Tulis minimal 1500 kata. Gunakan narasi mendalam, teknik 'Show Don't Tell', perbanyak deskripsi suasana dan perasaan. HANYA CERITA.`;
+            
+            try { textArea.value = await callDeepSeek(prompt); } 
+            catch (e) { textArea.value = "DeepSeek Error: " + e.message; }
+            finally { textArea.classList.remove('shimmer'); }
+        }
+
+        function downloadSingle(i, label, format) {
+            const novelTitle = document.getElementById('novelTitle').value || 'TebeStory';
+            const chapterTitle = document.getElementById(`title-ch-${i}`).value;
+            const text = document.getElementById(`content-ch-${i}`).value;
+            let res = format === 'html' ? `<html><head><meta charset="UTF-8"><style>body{background:#eed9b5;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:60px 40px;line-height:2.2;text-align:justify;} h2{font-family:'Cinzel',serif;font-size:2rem;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:40px;} p{margin-bottom:1.8rem;text-indent:4rem;}</style></head><body><h2>${chapterTitle}</h2>${text.split('\n').filter(p=>p.trim()!="").map(p=>`<p>${p.trim()}</p>`).join('')}</body></html>` : `[ ${chapterTitle} ]\n\n${text}`;
+            const blob = new Blob([res], { type: format === 'html' ? 'text/html' : 'text/plain' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${novelTitle}_${label}_${chapterTitle}.${format}`; a.click();
+        }
+
+        function downloadAll(format) {
+            const title = document.getElementById('novelTitle').value || 'TebeStory';
+            const texts = document.querySelectorAll('[id^="content-ch-"]');
+            const titles = document.querySelectorAll('[id^="title-ch-"]');
+            let res = "";
+            if(format === 'html') {
+                res = `<html><head><meta charset="UTF-8"><style>body{background:#eed9b5;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:80px 40px;line-height:2.2;text-align:justify;} h1{text-align:center;font-family:'Cinzel',serif;font-size:3.5rem;margin-bottom:120px;border-bottom:3px double #000;padding-bottom:20px;text-transform:uppercase;} h2{font-family:'Cinzel',serif;font-size:2rem;margin-top:150px;border-bottom:1px solid #333;padding-bottom:10px;} p{margin-bottom:1.8rem;text-indent:4rem;} .ornament{text-align:center;margin:100px 0;font-size:2.5rem;}</style></head><body><h1>${title}</h1>`;
+                titles.forEach((t, i) => res += `<div><h2>${t.value}</h2>${texts[i].value.split('\n').filter(p=>p.trim()!="").map(p=>`<p>${p.trim()}</p>`).join('')}<div class="ornament">❦</div></div>`);
+                res += "</body></html>";
+            } else { titles.forEach((t, i) => res += `\n\n[ ${t.value.toUpperCase()} ]\n\n${texts[i].value}\n\n`); }
+            const blob = new Blob([res], { type: format === 'html' ? 'text/html' : 'text/plain' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${title}_Full.${format}`; a.click();
+        }
+    </script>
+</body>
+</html>
+
