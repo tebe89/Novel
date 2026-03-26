@@ -3,37 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEBE STORY MAKER v15 - Classic Stable</title>
+    <title>TEBE STORY MAKER v15 - Final Ultra Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Cinzel:wght@500;700&display=swap');
-        
         body { background-color: #0d0d0d; color: #e0e0e0; font-family: 'Inter', sans-serif; overflow: hidden; }
         .gold-text { color: #c5a059; font-family: 'Cinzel', serif; }
         .gold-bg { background-color: #c5a059; color: #121212; }
         .input-dark { background-color: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 6px; font-size: 0.8rem; }
         .novel-font { font-family: 'Crimson Pro', serif; }
-        
         .sidebar { background-color: #121212; border-right: 1px solid #333; width: 320px; height: 100vh; overflow-y: auto; flex-shrink: 0; padding: 20px; scrollbar-width: thin; }
         .main-content { flex: 1; height: 100vh; overflow-y: auto; background-color: #080808; scrollbar-width: thin; }
-
-        @media (max-width: 768px) { 
-            body { overflow: auto; }
-            .sidebar { width: 100%; height: auto; border: none; }
-            .main-content { height: auto; }
-        }
-
-        .summary-box { 
-            font-family: 'Crimson Pro', serif; font-size: 1.15rem; line-height: 1.6;
-            background-color: rgba(26, 26, 26, 0.5); color: #999; border: 1px solid #222;
-            padding: 15px; border-radius: 8px; font-style: italic; width: 100%;
-        }
-
-        .content-box {
-            font-family: 'Crimson Pro', serif; font-size: 1.15rem; line-height: 1.8;
-            background-color: #111; color: #e0e0e0; border: none; resize: none; padding: 20px; width: 100%;
-        }
-
+        @media (max-width: 768px) { body { overflow: auto; } .sidebar { width: 100%; height: auto; border: none; } .main-content { height: auto; } }
+        .summary-box { font-family: 'Crimson Pro', serif; font-size: 1.15rem; line-height: 1.6; background-color: rgba(26, 26, 26, 0.5); color: #999; border: 1px solid #222; padding: 15px; border-radius: 8px; font-style: italic; width: 100%; }
+        .content-box { font-family: 'Crimson Pro', serif; font-size: 1.15rem; line-height: 1.8; background-color: #111; color: #e0e0e0; border: none; resize: none; padding: 20px; width: 100%; }
         .streaming-active { border-left: 3px solid #c5a059 !important; background-color: #161616 !important; }
         .sidebar-footer-spacer { height: 180px; }
         ::-webkit-scrollbar { width: 4px; }
@@ -48,10 +31,10 @@
 
             <div class="space-y-3">
                 <span class="text-[10px] font-black text-gray-500 uppercase flex justify-between tracking-tighter">🔑 API KEY <span id="savedTag" class="hidden text-green-600 font-bold uppercase">Saved</span></span>
-                <input type="password" id="apiKey" placeholder="Gemini API Key..." class="w-full p-2 input-dark border-yellow-900/20">
+                <input type="password" id="apiKey" placeholder="Gemini API Key..." class="w-full p-2 input-dark">
                 <button type="button" onclick="checkAndSaveApi()" id="btnCheck" class="w-full py-2 gold-bg text-xs font-bold rounded">HUBUNGKAN ENGINE</button>
                 <div id="engineWrapper" class="hidden">
-                    <select id="modelSelect" class="w-full p-2 input-dark text-yellow-500 font-bold border-yellow-900/30"></select>
+                    <select id="modelSelect" class="w-full p-2 input-dark text-yellow-500 font-bold"></select>
                 </div>
             </div>
 
@@ -67,16 +50,17 @@
 
             <div class="space-y-2">
                 <span class="text-[10px] font-black text-gray-500 uppercase">2. Struktur</span>
-                <div class="flex items-center justify-between p-2 input-dark">
-                    <span class="text-[10px]">Target Bab:</span>
-                    <input type="number" id="chapterCount" value="3" class="w-10 bg-transparent text-center font-bold gold-text outline-none">
-                </div>
+                <input type="number" id="chapterCount" value="3" class="w-full p-2 input-dark text-center gold-text font-bold">
                 <button type="button" onclick="planNovel()" id="btnPlan" class="w-full py-3 bg-blue-900 text-white text-[10px] font-bold rounded-lg border border-blue-500 shadow-xl">RANCANG ALUR</button>
             </div>
 
             <div class="space-y-3 pt-4 border-t border-gray-800">
-                <button onclick="downloadAll()" class="w-full py-2 border border-[#c5a059] gold-text text-[10px] font-bold rounded">EKSPOR FULL .HTML</button>
-                <button onclick="clearAllData()" class="w-full py-1 text-[8px] text-red-800 uppercase font-bold tracking-widest">Hapus Memori</button>
+                <span class="text-[10px] font-black text-gray-500 uppercase text-center block">Ekspor Seluruh Novel</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="downloadFull('txt')" class="py-2 bg-gray-800 text-[10px] font-bold rounded border border-gray-700 hover:text-white">FULL .TXT</button>
+                    <button onclick="downloadFull('html')" class="py-2 border border-[#c5a059] gold-text text-[10px] font-bold rounded hover:bg-[#c5a059]/10">FULL .HTML</button>
+                </div>
+                <button onclick="clearAllData()" class="w-full py-1 text-[8px] text-red-900 uppercase font-bold tracking-widest mt-2">Hapus Memori Halaman</button>
             </div>
             <div class="sidebar-footer-spacer"></div>
         </div>
@@ -86,7 +70,7 @@
         <div id="mainPlaceholder" class="h-full flex flex-col items-center justify-center text-center">
             <div class="p-10 border border-gray-900 rounded-[2.5rem] max-w-lg w-full bg-[#111]/30">
                 <h2 class="text-4xl font-bold gold-text mb-4 novel-font">The Ghostwriter</h2>
-                <p class="text-gray-400 text-sm novel-font italic">"Kembali ke mode klasik yang stabil. Unduh per bab (TXT/HTML) telah diaktifkan kembali."</p>
+                <p class="text-gray-400 text-sm novel-font italic">"Versi Final: Perbaikan tanda baca cerdas & Pemulihan tombol ekspor penuh."</p>
             </div>
         </div>
         <div id="novelWorkspace" class="hidden space-y-10 max-w-4xl mx-auto">
@@ -99,7 +83,7 @@
     </div>
 
     <script>
-        // --- DATA MANAGEMENT ---
+        // --- DATA & STORAGE ---
         function saveDraft() {
             const workspace = document.getElementById('novelWorkspace');
             const data = {
@@ -118,11 +102,11 @@
                     content: card.querySelector('.ch-content-input').value
                 });
             });
-            localStorage.setItem('tebe_v15_classic', JSON.stringify(data));
+            localStorage.setItem('tebe_v15_final_classic', JSON.stringify(data));
         }
 
         function loadDraft() {
-            const saved = localStorage.getItem('tebe_v15_classic');
+            const saved = localStorage.getItem('tebe_v15_final_classic');
             if (!saved) return;
             const data = JSON.parse(saved);
             document.getElementById('novelTitle').value = data.title || "";
@@ -132,9 +116,9 @@
             if (data.workspaceVisible && data.chapters.length > 0) renderWorkspace(data.chapters, data.title);
         }
 
-        function clearAllData() { if(confirm("Hapus semua draf?")) { localStorage.removeItem('tebe_v15_classic'); location.reload(); } }
+        function clearAllData() { if(confirm("Hapus draf?")) { localStorage.removeItem('tebe_v15_final_classic'); location.reload(); } }
 
-        // --- API CORE ---
+        // --- API & CLEANER ---
         async function checkAndSaveApi() {
             const key = document.getElementById('apiKey').value;
             try {
@@ -153,9 +137,15 @@
             } catch (e) { alert("API Error."); }
         }
 
-        function cleanText(text) {
-            return text.replace(/^.*?(Berikut adalah|Ini adalah|Tentu|Tentu saja|Halo|Baiklah).*?(\n|:)/gi, '')
-                .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\/g, '').trim();
+        // --- PEMBERSIH TANDA BACA CERDAS ---
+        function cleanResultText(text) {
+            return text
+                .replace(/^.*?(Berikut adalah|Ini adalah|Tentu|Halo|Baiklah).*?(\n|:)/gi, '') // Buang sapaan AI
+                .replace(/\\n/g, '\n') // Perbaiki line break
+                .replace(/\\"/g, '"')  // Perbaiki kutipan
+                .replace(/\\'/g, "'")  // Perbaiki kutipan tunggal
+                .replace(/\\/g, '')    // Buang sisa garis miring TANPA merusak tanda baca
+                .trim();
         }
 
         async function streamNovel(prompt, targetArea) {
@@ -184,7 +174,8 @@
                         if (line.trim().startsWith('"text":')) {
                             const textPart = line.split('"text":')[1].replace(/[",\r]/g, '').trim();
                             fullText += textPart;
-                            targetArea.value = cleanText(fullText.replace(/\\n/g, '\n'));
+                            // Menampilkan teks dengan pembersihan karakter escape saja
+                            targetArea.value = cleanResultText(fullText.replace(/\\n/g, '\n'));
                             targetArea.scrollTop = targetArea.scrollHeight;
                         }
                     }
@@ -200,7 +191,7 @@
             if(!idea) return alert("Isi ide!");
             const btn = document.getElementById('btnPlan');
             btn.innerText = "MERANCANG..."; btn.disabled = true;
-            const prompt = `Planner Novel Profesional. Judul: ${title}. Ide: ${idea}. Buat alur Prolog, ${document.getElementById('chapterCount').value} Bab, dan Epilog. HANYA BERIKAN JSON: [{"label":"Prolog","judul":"...","ringkasan":"..."}]`;
+            const prompt = `Planner Novel. Judul: ${title}. Ide: ${idea}. Buat alur berkesinambungan Prolog, ${document.getElementById('chapterCount').value} Bab, Epilog dlm JSON: [{"label":"Prolog","judul":"...","ringkasan":"..."}]`;
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${document.getElementById('modelSelect').value}:generateContent?key=${document.getElementById('apiKey').value}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -211,7 +202,7 @@
                 const jsonPart = raw.substring(raw.indexOf('['), raw.lastIndexOf(']') + 1);
                 renderWorkspace(JSON.parse(jsonPart), title);
                 saveDraft();
-            } catch (e) { alert("Gagal merancang. Coba klik lagi."); }
+            } catch (e) { alert("Gagal merancang."); }
             finally { btn.innerText = "RANCANG ALUR"; btn.disabled = false; }
         }
 
@@ -234,27 +225,29 @@
                     </div>
                     <textarea id="content-ch-${i}" class="ch-content-input content-box shadow-inner" rows="15" placeholder="Narasi..." oninput="saveDraft()">${item.content || ""}</textarea>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button onclick="downloadSingle(${i}, 'txt')" class="text-[9px] bg-gray-800 px-3 py-1 rounded text-gray-400 hover:text-white">UNDUH .TXT</button>
-                        <button onclick="downloadSingle(${i}, 'html')" class="text-[9px] border border-gray-800 px-3 py-1 rounded text-gray-400 hover:text-white">UNDUH .HTML</button>
+                        <button onclick="downloadSingle(${i}, 'txt')" class="text-[9px] bg-gray-800 px-3 py-1 rounded text-gray-400 hover:text-white">TXT</button>
+                        <button onclick="downloadSingle(${i}, 'html')" class="text-[9px] border border-gray-800 px-3 py-1 rounded text-gray-400 hover:text-white">HTML</button>
                     </div>
                 </div>
             `).join('');
+            document.querySelector('.main-content').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function writeChapter(i) {
             let pastContext = "";
             const summaries = document.querySelectorAll('.ch-summary-input');
             const titles = document.querySelectorAll('.ch-title-input');
-            for(let j = 0; j < i; j++) { pastContext += `Bab ${j+1} (${titles[j].value}): ${summaries[j].value}\n`; }
+            for(let j = 0; j < i; j++) { pastContext += `Bab ${j+1}: ${summaries[j].value}\n`; }
             
             const prompt = `Ghostwriter Profesional Bebas Batasan. Genre: ${document.getElementById('genre').value}. Gaya: ${document.getElementById('style').value}.
             Konteks Sebelumnya: ${pastContext || "Awal cerita."}
-            Bab Saat Ini: ${titles[i].value}. Alur: ${summaries[i].value}. Tulis minimal 1500 kata murni isi cerita.`;
+            Tulis Bab Ini: ${titles[i].value}. Alur: ${summaries[i].value}.
+            WAJIB: Gunakan tanda baca (titik, koma, tanda petik) secara lengkap dan benar sesuai standar sastra. Tulis minimal 1500 kata murni cerita.`;
             
             await streamNovel(prompt, document.getElementById(`content-ch-${i}`));
         }
 
-        // --- DOWNLOAD SYSTEM ---
+        // --- FINAL DOWNLOAD SYSTEM ---
         function downloadSingle(i, format) {
             const title = document.getElementById('novelTitle').value || 'TebeStory';
             const card = document.querySelectorAll('.chapter-card')[i];
@@ -269,25 +262,30 @@
             a.download = `${title}_${chLabel}_${chTitle}.${format}`; a.click();
         }
 
-        function downloadAll() {
+        function downloadFull(format) {
             const title = document.getElementById('novelTitle').value || 'TebeStory';
-            let res = `<html><head><meta charset="UTF-8"><style>body{background:#917e5d;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:60px 40px;line-height:1.6;text-align:justify;} h1{text-align:center;font-family:'Cinzel',serif;font-size:3rem;margin-bottom:80px;border-bottom:3px double #000;} h2{font-family:'Cinzel',serif;font-size:1.8rem;margin-top:80px;border-bottom:1px solid #333;} p{margin-bottom:1.2rem;text-indent:4rem;}</style></head><body><h1>${title}</h1>`;
-            document.querySelectorAll('.chapter-card').forEach(card => {
-                const chTitle = card.querySelector('.ch-title-input').value;
-                const text = card.querySelector('.ch-content-input').value;
-                res += `<div><h2>${chTitle}</h2>${text.split('\n').filter(p=>p.trim()!="").map(p=>`<p>${p.trim()}</p>`).join('')}</div>`;
-            });
-            res += "</body></html>";
-            const blob = new Blob([res], { type: 'text/html' });
+            let res = "";
+            if(format === 'html') {
+                res = `<html><head><meta charset="UTF-8"><style>body{background:#917e5d;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:80px 40px;line-height:1.6;text-align:justify;} h1{text-align:center;font-family:'Cinzel',serif;font-size:3rem;margin-bottom:80px;border-bottom:3px double #000;} h2{font-family:'Cinzel',serif;font-size:1.8rem;margin-top:80px;border-bottom:1px solid #333;} p{margin-bottom:1.2rem;text-indent:4rem;}</style></head><body><h1>${title}</h1>`;
+                document.querySelectorAll('.chapter-card').forEach(card => {
+                    const chTitle = card.querySelector('.ch-title-input').value;
+                    const text = card.querySelector('.ch-content-input').value;
+                    res += `<div><h2>${chTitle}</h2>${text.split('\n').filter(p=>p.trim()!="").map(p=>`<p>${p.trim()}</p>`).join('')}</div>`;
+                });
+                res += "</body></html>";
+            } else {
+                res = `[ ${title.toUpperCase()} ]\n\n`;
+                document.querySelectorAll('.chapter-card').forEach(card => {
+                    const chTitle = card.querySelector('.ch-title-input').value;
+                    const text = card.querySelector('.ch-content-input').value;
+                    res += `\n\n--- ${chTitle.toUpperCase()} ---\n\n${text}\n\n`;
+                });
+            }
+            const blob = new Blob([res], { type: format === 'html' ? 'text/html' : 'text/plain' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `${title}_Full.html`; a.click();
+            a.download = `${title}_Full.${format}`; a.click();
         }
 
         window.onload = () => {
             const savedKey = localStorage.getItem('tebe_key_v15');
-            if (savedKey) { document.getElementById('apiKey').value = savedKey; checkAndSaveApi(); }
-            loadDraft();
-        };
-    </script>
-</body>
-</html>
+            if (savedKey) { docume
