@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEBE STORY MAKER v15 - Fixed Scroll</title>
+    <title>TEBE STORY MAKER v15 - Final Layout</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Cinzel:wght@500;700&display=swap');
@@ -15,17 +15,17 @@
         .input-dark:focus { border-color: #c5a059; outline: none; }
         .novel-font { font-family: 'Crimson Pro', serif; }
 
-        /* Sidebar & Workspace Independen */
+        /* PERBAIKAN SIDEBAR: Memastikan scroll mentok sampai bawah */
         .sidebar { 
             background-color: #141414; 
             border-right: 1px solid #333; 
             width: 320px; 
             height: 100vh; 
-            overflow-y: scroll; /* Dipaksa agar scrollbar selalu ada jika konten penuh */
+            overflow-y: scroll; /* Paksa scrollbar agar user tahu bisa di-scroll */
             flex-shrink: 0; 
-            display: flex;
-            flex-direction: column;
+            padding: 20px;
         }
+
         .main-content { flex: 1; height: 100vh; overflow-y: auto; background-color: #0a0a0a; }
 
         @media (max-width: 768px) { 
@@ -34,23 +34,26 @@
             .main-content { height: auto; overflow: visible; }
         }
 
+        /* Spasi ekstra di bawah agar tombol unduh tidak mepet */
+        .sidebar-footer-spacer { height: 120px; width: 100%; }
+
         .shimmer { background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
-        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #c5a059; }
     </style>
 </head>
 <body class="flex flex-col md:flex-row min-h-screen">
 
-    <div class="sidebar p-5">
-        <div class="space-y-6 pb-10"> <h1 class="text-xl font-bold gold-text border-b border-gray-800 pb-2">Studio Novel v15</h1>
+    <div class="sidebar">
+        <div class="space-y-6">
+            <h1 class="text-xl font-bold gold-text border-b border-gray-800 pb-2">Studio Novel v15</h1>
 
             <div class="space-y-2">
                 <span class="text-[10px] font-black text-gray-500 uppercase flex justify-between">🔑 Akses <span id="savedTag" class="hidden text-green-600 font-bold uppercase">Saved</span></span>
                 <input type="password" id="apiKey" placeholder="Gemini API Key..." class="w-full p-2 input-dark">
-                <button onclick="checkAndSaveApi()" id="btnCheck" class="w-full py-2 gold-bg text-xs font-bold rounded hover:opacity-90">CEK API KEY</button>
+                <button onclick="checkAndSaveApi()" id="btnCheck" class="w-full py-2 gold-bg text-xs font-bold rounded">CEK API KEY</button>
                 <div id="engineWrapper" class="hidden">
                     <select id="modelSelect" class="w-full p-2 input-dark text-yellow-500 font-semibold border-yellow-900/30"></select>
                 </div>
@@ -75,13 +78,15 @@
                 <button onclick="planNovel()" id="btnPlan" class="w-full py-3 bg-blue-900 text-white text-[10px] font-bold rounded-lg border border-blue-500">RANCANG ALUR</button>
             </div>
 
-            <div class="space-y-2 pt-4 border-t border-gray-800">
-                <span class="text-[10px] font-black text-gray-500 uppercase">Ekspor Keseluruhan</span>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="downloadAll('txt')" class="py-2 bg-gray-800 text-[9px] font-bold rounded">FULL .TXT</button>
-                    <button onclick="downloadAll('html')" class="py-2 border border-[#c5a059] gold-text text-[9px] font-bold rounded">FULL .HTML</button>
+            <div class="space-y-3 pt-6 border-t border-gray-800">
+                <span class="text-[10px] font-black text-gray-500 uppercase">Unduh Seluruh Novel</span>
+                <div class="grid grid-cols-1 gap-2">
+                    <button onclick="downloadAll('txt')" class="py-2 bg-gray-800 text-[10px] font-bold rounded border border-gray-700 hover:bg-gray-700">SIMPAN FULL .TXT</button>
+                    <button onclick="downloadAll('html')" class="py-2 border border-[#c5a059] gold-text text-[10px] font-bold rounded hover:bg-[#c5a059]/10">SIMPAN FULL .HTML</button>
                 </div>
             </div>
+
+            <div class="sidebar-footer-spacer"></div>
         </div>
     </div>
 
@@ -89,7 +94,7 @@
         <div id="mainPlaceholder" class="h-full flex flex-col items-center justify-center text-center">
             <div class="p-10 border border-gray-900 rounded-[2.5rem] max-w-lg w-full bg-[#111]/30">
                 <h2 class="text-4xl font-bold gold-text mb-4">Tebe Story Maker</h2>
-                <p class="text-gray-500 text-sm novel-font italic">"Navigasi independen diperbaiki. Gunakan scroll pada sisi kiri untuk mengakses tombol ekspor."</p>
+                <p class="text-gray-500 text-sm novel-font italic">"Layout diperbaiki. Tombol unduh kini bisa diakses melalui scroll pada sidebar kiri."</p>
             </div>
         </div>
 
@@ -120,8 +125,7 @@
                     localStorage.setItem('tebe_v15_key', key);
                     document.getElementById('savedTag').classList.remove('hidden');
                     const select = document.getElementById('modelSelect');
-                    select.innerHTML = data.models
-                        .filter(m => m.supportedGenerationMethods.includes('generateContent'))
+                    select.innerHTML = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent'))
                         .map(m => `<option value="${m.name}">${m.displayName.replace("Gemini ","")}</option>`).join('');
                     document.getElementById('engineWrapper').classList.remove('hidden');
                     btn.innerText = "TERHUBUNG ✓"; btn.classList.replace('gold-bg', 'bg-green-800'); btn.style.color = "white";
@@ -197,12 +201,16 @@
             const novelTitle = document.getElementById('novelTitle').value || 'TebeStory';
             const chapterTitle = document.getElementById(`title-ch-${i}`).value;
             const text = document.getElementById(`content-ch-${i}`).value;
-            let res = format === 'html' ? `<html><head><meta charset="UTF-8"><style>body{background:#eed9b5;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:60px 40px;line-height:2.2;text-align:justify;} h2{font-family:'Cinzel',serif;font-size:2rem;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:40px;} p{margin-bottom:1.8rem;text-indent:4rem;}</style></head><body><h2>${chapterTitle}</h2>${text.split('\n').filter(p=>p.trim()!="").map(p=>`<p>${p.trim()}</p>`).join('')}</body></html>` : `[ ${chapterTitle.toUpperCase()} ]\n\n${text}`;
-            const blob = new Blob([res], { type: format === 'html' ? 'text/html' : 'text/plain' });
-            const a = document.createElement('a'); 
-            a.href = URL.createObjectURL(blob); 
-            a.download = `${novelTitle}_${label}_${chapterTitle}.${format}`;
-            a.click();
+            let res = "";
+            if(format === 'html') {
+                res = `<html><head><meta charset="UTF-8"><style>body{background:#eed9b5;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:60px 40px;line-height:2.2;text-align:justify;} h2{font-family:'Cinzel',serif;font-size:2rem;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:40px;} p{margin-bottom:1.8rem;text-indent:4rem;}</style></head><body><h2>${chapterTitle}</h2>${text.split('\n').filter(p=>p.trim()!="").map(p=>`<p>${p.trim()}</p>`).join('')}</body></html>` : `[ ${chapterTitle.toUpperCase()} ]\n\n${text}`;
+                const blob = new Blob([res], { type: 'text/html' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${novelTitle}_${label}_${chapterTitle}.html`; a.click();
+            } else {
+                res = `[ ${chapterTitle.toUpperCase()} ]\n\n${text}`;
+                const blob = new Blob([res], { type: 'text/plain' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${novelTitle}_${label}_${chapterTitle}.txt`; a.click();
+            }
         }
 
         function downloadAll(format) {
@@ -214,12 +222,13 @@
                 res = `<html><head><meta charset="UTF-8"><style>body{background:#eed9b5;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:80px 40px;line-height:2.2;text-align:justify;} h1{text-align:center;font-family:'Cinzel',serif;font-size:3.5rem;margin-bottom:120px;border-bottom:3px double #000;padding-bottom:20px;text-transform:uppercase;} h2{font-family:'Cinzel',serif;font-size:2rem;margin-top:150px;border-bottom:1px solid #333;padding-bottom:10px;} p{margin-bottom:1.8rem;text-indent:4rem;} .ornament{text-align:center;margin:100px 0;font-size:2.5rem;}</style></head><body><h1>${title}</h1>`;
                 titles.forEach((t, i) => res += `<div><h2>${t.value}</h2>${texts[i].value.split('\n').filter(p=>p.trim()!="").map(p=>`<p>${p.trim()}</p>`).join('')}<div class="ornament">❦</div></div>`);
                 res += "</body></html>";
-            } else { titles.forEach((t, i) => res += `\n\n[ ${t.value.toUpperCase()} ]\n\n${texts[i].value}\n\n`); }
-            const blob = new Blob([res], { type: format === 'html' ? 'text/html' : 'text/plain' });
-            const a = document.createElement('a'); 
-            a.href = URL.createObjectURL(blob); 
-            a.download = `${title}_Full.${format}`;
-            a.click();
+                const blob = new Blob([res], { type: 'text/html' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${title}_Full.html`; a.click();
+            } else {
+                titles.forEach((t, i) => res += `\n\n[ ${t.value.toUpperCase()} ]\n\n${texts[i].value}\n\n`);
+                const blob = new Blob([res], { type: 'text/plain' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${title}_Full.txt`; a.click();
+            }
         }
     </script>
 </body>
