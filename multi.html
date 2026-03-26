@@ -3,41 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEBE STORY MAKER v15 - Split Scroll</title>
+    <title>TEBE STORY MAKER v15 - Stable Scroll</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Cinzel:wght@500;700&display=swap');
         
-        body { 
-            background-color: #0f0f0f; 
-            color: #e0e0e0; 
-            font-family: 'Inter', sans-serif; 
-            overflow: hidden; /* Mencegah double scrollbar pada body */
-        }
-
+        body { background-color: #0f0f0f; color: #e0e0e0; font-family: 'Inter', sans-serif; overflow: hidden; }
         .gold-text { color: #c5a059; font-family: 'Cinzel', serif; }
         .gold-bg { background-color: #c5a059; color: #121212; }
         .input-dark { background-color: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 6px; font-size: 0.85rem; }
         .input-dark:focus { border-color: #c5a059; outline: none; }
         .novel-font { font-family: 'Crimson Pro', serif; }
 
-        /* KUNCI UTAMA: Sidebar Tetap Diam */
-        .sidebar { 
-            background-color: #141414; 
-            border-right: 1px solid #333; 
-            width: 320px; 
-            height: 100vh; 
-            overflow-y: auto; /* Sidebar bisa scroll sendiri jika input banyak */
-            flex-shrink: 0;
-        }
-
-        /* KUNCI UTAMA: Workspace Tetap Diam */
-        .main-content { 
-            flex: 1; 
-            height: 100vh; 
-            overflow-y: auto; /* Hasil cerita bisa scroll sendiri */
-            background-color: #0a0a0a;
-        }
+        /* Scroll Independen Landscape */
+        .sidebar { background-color: #141414; border-right: 1px solid #333; width: 320px; height: 100vh; overflow-y: auto; flex-shrink: 0; scrollbar-width: thin; }
+        .main-content { flex: 1; height: 100vh; overflow-y: auto; background-color: #0a0a0a; scrollbar-width: thin; }
 
         @media (max-width: 768px) { 
             body { overflow: auto; }
@@ -48,11 +28,8 @@
         .shimmer { background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
-        /* Custom Scrollbar agar lebih estetik */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #c5a059; }
     </style>
 </head>
 <body class="flex flex-col md:flex-row min-h-screen">
@@ -61,7 +38,7 @@
         <h1 class="text-xl font-bold gold-text border-b border-gray-800 pb-2">Studio Novel v15</h1>
 
         <div class="space-y-2">
-            <span class="text-[10px] font-black text-gray-500 uppercase flex justify-between">🔑 Akses <span id="savedTag" class="hidden text-green-600 font-bold">KEY SAVED</span></span>
+            <span class="text-[10px] font-black text-gray-500 uppercase flex justify-between">🔑 Akses <span id="savedTag" class="hidden text-green-600 font-bold uppercase">Saved</span></span>
             <input type="password" id="apiKey" placeholder="Gemini API Key..." class="w-full p-2 input-dark">
             <button onclick="checkAndSaveApi()" id="btnCheck" class="w-full py-2 gold-bg text-xs font-bold rounded hover:opacity-90">CEK API KEY</button>
             <div id="engineWrapper" class="hidden">
@@ -76,16 +53,16 @@
                 <input type="text" id="genre" placeholder="Genre" class="p-2 input-dark">
                 <input type="text" id="style" placeholder="Gaya Bahasa" class="p-2 input-dark">
             </div>
-            <textarea id="storyIdea" rows="3" placeholder="Ide Cerita Utama..." class="w-full p-2 input-dark"></textarea>
+            <textarea id="storyIdea" rows="3" placeholder="Ide Cerita..." class="w-full p-2 input-dark"></textarea>
         </div>
 
         <div class="space-y-2">
             <span class="text-[10px] font-black text-gray-500 uppercase">2. Struktur</span>
             <div class="flex items-center justify-between p-2 input-dark">
-                <span class="text-[10px]">Jumlah Bab:</span>
+                <span class="text-[10px]">Target Bab:</span>
                 <input type="number" id="chapterCount" value="3" class="w-10 bg-transparent text-center font-bold gold-text outline-none">
             </div>
-            <button onclick="planNovel()" id="btnPlan" class="w-full py-3 bg-blue-900 text-white text-[10px] font-bold rounded-lg border border-blue-500">RANCANG ALUR</button>
+            <button onclick="planNovel()" id="btnPlan" class="w-full py-3 bg-blue-900 text-white text-[10px] font-bold rounded-lg border border-blue-500 hover:bg-blue-800">RANCANG ALUR</button>
         </div>
 
         <div class="grid grid-cols-2 gap-2 pt-4 border-t border-gray-800">
@@ -98,7 +75,7 @@
         <div id="mainPlaceholder" class="h-full flex flex-col items-center justify-center text-center">
             <div class="p-10 border border-gray-900 rounded-[2.5rem] max-w-lg w-full bg-[#111]/30">
                 <h2 class="text-4xl font-bold gold-text mb-4">Tebe Story Maker</h2>
-                <p class="text-gray-500 text-sm novel-font italic">"Navigasi independen aktif. Sidebar kiri tetap pada posisinya saat Anda menelusuri cerita."</p>
+                <p class="text-gray-500 text-sm novel-font italic">"Optimasi kestabilan engine aktif. Mendukung model Flash, Pro, hingga versi Preview/Experimental."</p>
             </div>
         </div>
 
@@ -112,7 +89,6 @@
     </div>
 
     <script>
-        // JS Logika Tetap Sama Seperti v15 Sebelumnya
         window.onload = () => {
             const savedKey = localStorage.getItem('tebe_v15_key');
             if (savedKey) { document.getElementById('apiKey').value = savedKey; document.getElementById('savedTag').classList.remove('hidden'); }
@@ -130,12 +106,41 @@
                     localStorage.setItem('tebe_v15_key', key);
                     document.getElementById('savedTag').classList.remove('hidden');
                     const select = document.getElementById('modelSelect');
-                    select.innerHTML = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent'))
+                    select.innerHTML = data.models
+                        .filter(m => m.supportedGenerationMethods.includes('generateContent'))
                         .map(m => `<option value="${m.name}">${m.displayName.replace("Gemini ","")}</option>`).join('');
                     document.getElementById('engineWrapper').classList.remove('hidden');
                     btn.innerText = "TERHUBUNG ✓"; btn.classList.replace('gold-bg', 'bg-green-800'); btn.style.color = "white";
                 }
-            } catch (e) { alert("Key Salah!"); btn.innerText = "CEK API KEY"; }
+            } catch (e) { alert("API Key tidak valid."); btn.innerText = "CEK API KEY"; }
+        }
+
+        // Fungsi panggil AI umum dengan penanganan keamanan ekstra
+        async function callGemini(key, model, prompt, isJson = false) {
+            const safety = [
+                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+            ];
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${key}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { 
+                        maxOutputTokens: 8192, 
+                        temperature: 0.8,
+                        responseMimeType: isJson ? "application/json" : "text/plain"
+                    },
+                    safetySettings: safety
+                })
+            });
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+            if (!data.candidates || data.candidates[0].finishReason === "SAFETY") throw new Error("Diblokir sensor keamanan.");
+            return data.candidates[0].content.parts[0].text;
         }
 
         async function planNovel() {
@@ -144,16 +149,20 @@
             const idea = document.getElementById('storyIdea').value;
             const title = document.getElementById('novelTitle').value || "Karya Tebe";
             const btn = document.getElementById('btnPlan');
+
             if(!key || !idea) return alert("Lengkapi API Key dan Ide!");
             btn.innerText = "MERANCANG..."; btn.disabled = true;
-            const prompt = `Planner Novel: Buat kerangka novel "${title}". Genre: ${document.getElementById('genre').value}. Ide: ${idea}. Buat 1 Prolog, ${document.getElementById('chapterCount').value} Bab, 1 Epilog. JSON: [{"label":"Prolog","judul":"...","ringkasan":"..."}, ...]`;
+
+            // Prompt dipermudah agar model experimental tidak bingung
+            const prompt = `Buat kerangka novel JSON untuk "${title}". Ide: ${idea}. Buat 1 Prolog, ${document.getElementById('chapterCount').value} Bab, 1 Epilog. Harus format JSON list: [{"label":"Prolog","judul":"Judul","ringkasan":"isi alur"}]`;
+
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${key}`, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
-                const data = await res.json();
-                const plan = JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json|```/g, ""));
+                const raw = await callGemini(key, model, prompt, true);
+                const plan = JSON.parse(raw);
                 renderWorkspace(plan, title);
-            } catch (e) { alert("Gagal merancang."); }
-            finally { btn.innerText = "RANCANG ALUR"; btn.disabled = false; }
+            } catch (e) { 
+                alert("Gagal merancang: " + e.message + ". Coba gunakan model 1.5 Flash jika model ini terus gagal."); 
+            } finally { btn.innerText = "RANCANG ALUR"; btn.disabled = false; }
         }
 
         function renderWorkspace(plan, title) {
@@ -173,7 +182,7 @@
                         <button onclick="generateChapter(${i})" class="h-fit bg-white text-black px-6 py-2 rounded-full text-[10px] font-black hover:bg-[#c5a059]">TULIS BAB</button>
                     </div>
                     <textarea id="content-ch-${i}" rows="12" class="w-full p-4 input-dark novel-font text-lg leading-relaxed resize-none border-none" placeholder="Prosa..."></textarea>
-                    <div class="flex justify-end gap-2 border-t border-gray-800 pt-3">
+                    <div class="flex justify-end gap-2 border-t border-gray-900 pt-3">
                         <button onclick="downloadSingle(${i}, 'txt')" class="text-[9px] bg-gray-800 px-3 py-1 rounded text-gray-400">TXT</button>
                         <button onclick="downloadSingle(${i}, 'html')" class="text-[9px] border border-gray-800 px-3 py-1 rounded text-gray-400">HTML</button>
                     </div>
@@ -186,17 +195,15 @@
             const key = document.getElementById('apiKey').value;
             const model = document.getElementById('modelSelect').value;
             const textArea = document.getElementById(`content-ch-${i}`);
-            textArea.value = "Sedang merangkai kata...";
+            
+            textArea.value = "Menulis mahakarya... (Model Preview mungkin butuh waktu lebih lama)";
             textArea.classList.add('shimmer');
-            const prompt = `Novelis Profesional. Gaya: ${document.getElementById('style').value}. Tulis bab: ${document.getElementById(`title-ch-${i}`).value}. Alur: ${document.getElementById(`summary-ch-${i}`).value}. Minimal 1000 kata. Narasi deskriptif. HANYA CERITA.`;
+
+            const prompt = `Novelis Profesional. Tulis isi cerita novel. Judul: ${document.getElementById(`title-ch-${i}`).value}. Alur: ${document.getElementById(`summary-ch-${i}`).value}. Gaya: ${document.getElementById('style').value}. Minimal 1000 kata. HANYA CERITA.`;
+
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${key}`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 8192, temperature: 0.8 } })
-                });
-                const data = await response.json();
-                textArea.value = data.candidates[0].content.parts[0].text.trim();
-            } catch (e) { textArea.value = "GAGAL menulis."; }
+                textArea.value = await callGemini(key, model, prompt, false);
+            } catch (e) { textArea.value = "GAGAL: " + e.message; }
             finally { textArea.classList.remove('shimmer'); }
         }
 
