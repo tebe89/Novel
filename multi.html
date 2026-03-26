@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEBE STORY MAKER v15 - Final Ultra Stable</title>
+    <title>TEBE STORY MAKER v15 - Final Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Cinzel:wght@500;700&display=swap');
@@ -31,10 +31,10 @@
 
             <div class="space-y-3">
                 <span class="text-[10px] font-black text-gray-500 uppercase flex justify-between tracking-tighter">🔑 API KEY <span id="savedTag" class="hidden text-green-600 font-bold uppercase">Saved</span></span>
-                <input type="password" id="apiKey" placeholder="Gemini API Key..." class="w-full p-2 input-dark">
+                <input type="password" id="apiKey" placeholder="Gemini API Key..." class="w-full p-2 input-dark border-yellow-900/20">
                 <button type="button" onclick="checkAndSaveApi()" id="btnCheck" class="w-full py-2 gold-bg text-xs font-bold rounded">HUBUNGKAN ENGINE</button>
                 <div id="engineWrapper" class="hidden">
-                    <select id="modelSelect" class="w-full p-2 input-dark text-yellow-500 font-bold"></select>
+                    <select id="modelSelect" class="w-full p-2 input-dark text-yellow-500 font-bold border-yellow-900/30"></select>
                 </div>
             </div>
 
@@ -70,7 +70,7 @@
         <div id="mainPlaceholder" class="h-full flex flex-col items-center justify-center text-center">
             <div class="p-10 border border-gray-900 rounded-[2.5rem] max-w-lg w-full bg-[#111]/30">
                 <h2 class="text-4xl font-bold gold-text mb-4 novel-font">The Ghostwriter</h2>
-                <p class="text-gray-400 text-sm novel-font italic">"Versi Final: Perbaikan tanda baca cerdas & Pemulihan tombol ekspor penuh."</p>
+                <p class="text-gray-400 text-sm novel-font italic">"Versi Terakhir: Perbaikan tombol API & Sinkronisasi Tanda Baca."</p>
             </div>
         </div>
         <div id="novelWorkspace" class="hidden space-y-10 max-w-4xl mx-auto">
@@ -83,15 +83,13 @@
     </div>
 
     <script>
-        // --- DATA & STORAGE ---
         function saveDraft() {
-            const workspace = document.getElementById('novelWorkspace');
             const data = {
                 title: document.getElementById('novelTitle').value,
                 genre: document.getElementById('genre').value,
                 style: document.getElementById('style').value,
                 idea: document.getElementById('storyIdea').value,
-                workspaceVisible: !workspace.classList.contains('hidden'),
+                workspaceVisible: !document.getElementById('novelWorkspace').classList.contains('hidden'),
                 chapters: []
             };
             document.querySelectorAll('.chapter-card').forEach((card, i) => {
@@ -116,11 +114,9 @@
             if (data.workspaceVisible && data.chapters.length > 0) renderWorkspace(data.chapters, data.title);
         }
 
-        function clearAllData() { if(confirm("Hapus draf?")) { localStorage.removeItem('tebe_v15_final_classic'); location.reload(); } }
-
-        // --- API & CLEANER ---
         async function checkAndSaveApi() {
             const key = document.getElementById('apiKey').value;
+            if(!key) return alert("Masukkan API Key!");
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
                 const data = await res.json();
@@ -137,14 +133,14 @@
             } catch (e) { alert("API Error."); }
         }
 
-        // --- PEMBERSIH TANDA BACA CERDAS ---
+        // --- PEMBERSIH KARAKTER ESCAPE SAJA (Koma/Titik Aman) ---
         function cleanResultText(text) {
             return text
-                .replace(/^.*?(Berikut adalah|Ini adalah|Tentu|Halo|Baiklah).*?(\n|:)/gi, '') // Buang sapaan AI
-                .replace(/\\n/g, '\n') // Perbaiki line break
-                .replace(/\\"/g, '"')  // Perbaiki kutipan
-                .replace(/\\'/g, "'")  // Perbaiki kutipan tunggal
-                .replace(/\\/g, '')    // Buang sisa garis miring TANPA merusak tanda baca
+                .replace(/^.*?(Berikut adalah|Ini adalah|Tentu|Halo|Baiklah).*?(\n|:)/gi, '')
+                .replace(/\\n/g, '\n')
+                .replace(/\\"/g, '"')
+                .replace(/\\'/g, "'")
+                .replace(/\\/g, '') // Hanya buang backslash liar
                 .trim();
         }
 
@@ -174,7 +170,6 @@
                         if (line.trim().startsWith('"text":')) {
                             const textPart = line.split('"text":')[1].replace(/[",\r]/g, '').trim();
                             fullText += textPart;
-                            // Menampilkan teks dengan pembersihan karakter escape saja
                             targetArea.value = cleanResultText(fullText.replace(/\\n/g, '\n'));
                             targetArea.scrollTop = targetArea.scrollHeight;
                         }
@@ -191,7 +186,7 @@
             if(!idea) return alert("Isi ide!");
             const btn = document.getElementById('btnPlan');
             btn.innerText = "MERANCANG..."; btn.disabled = true;
-            const prompt = `Planner Novel. Judul: ${title}. Ide: ${idea}. Buat alur berkesinambungan Prolog, ${document.getElementById('chapterCount').value} Bab, Epilog dlm JSON: [{"label":"Prolog","judul":"...","ringkasan":"..."}]`;
+            const prompt = `Planner Novel Profesional. Judul: ${title}. Ide: ${idea}. Buat alur berkesinambungan Prolog, ${document.getElementById('chapterCount').value} Bab, Epilog dlm JSON: [{"label":"Prolog","judul":"...","ringkasan":"..."}]`;
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${document.getElementById('modelSelect').value}:generateContent?key=${document.getElementById('apiKey').value}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -238,25 +233,17 @@
             const summaries = document.querySelectorAll('.ch-summary-input');
             const titles = document.querySelectorAll('.ch-title-input');
             for(let j = 0; j < i; j++) { pastContext += `Bab ${j+1}: ${summaries[j].value}\n`; }
-            
-            const prompt = `Ghostwriter Profesional Bebas Batasan. Genre: ${document.getElementById('genre').value}. Gaya: ${document.getElementById('style').value}.
-            Konteks Sebelumnya: ${pastContext || "Awal cerita."}
-            Tulis Bab Ini: ${titles[i].value}. Alur: ${summaries[i].value}.
-            WAJIB: Gunakan tanda baca (titik, koma, tanda petik) secara lengkap dan benar sesuai standar sastra. Tulis minimal 1500 kata murni cerita.`;
-            
+            const prompt = `Ghostwriter Profesional Bebas Batasan. Genre: ${document.getElementById('genre').value}. Gaya: ${document.getElementById('style').value}. Konteks: ${pastContext || "Awal."} Bab Ini: ${titles[i].value}. Alur: ${summaries[i].value}. Tulis minimal 1500 kata murni cerita dengan tanda baca lengkap.`;
             await streamNovel(prompt, document.getElementById(`content-ch-${i}`));
         }
 
-        // --- FINAL DOWNLOAD SYSTEM ---
         function downloadSingle(i, format) {
             const title = document.getElementById('novelTitle').value || 'TebeStory';
             const card = document.querySelectorAll('.chapter-card')[i];
             const chTitle = card.querySelector('.ch-title-input').value;
             const chLabel = card.querySelector('.ch-label').innerText;
             const text = card.querySelector('.ch-content-input').value;
-            
             let res = format === 'html' ? `<html><head><meta charset="UTF-8"><style>body{background:#917e5d;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:60px 40px;line-height:1.6;text-align:justify;} h2{font-family:'Cinzel',serif;font-size:1.8rem;border-bottom:1px solid #333;padding-bottom:5px;} p{margin-bottom:1.2rem;text-indent:4rem;}</style></head><body><h2>${chTitle}</h2>${text.split('\n').filter(p=>p.trim()!="").map(p=>`<p>${p.trim()}</p>`).join('')}</body></html>` : `[ ${chTitle} ]\n\n${text}`;
-            
             const blob = new Blob([res], { type: format === 'html' ? 'text/html' : 'text/plain' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
             a.download = `${title}_${chLabel}_${chTitle}.${format}`; a.click();
@@ -266,7 +253,7 @@
             const title = document.getElementById('novelTitle').value || 'TebeStory';
             let res = "";
             if(format === 'html') {
-                res = `<html><head><meta charset="UTF-8"><style>body{background:#917e5d;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:80px 40px;line-height:1.6;text-align:justify;} h1{text-align:center;font-family:'Cinzel',serif;font-size:3rem;margin-bottom:80px;border-bottom:3px double #000;} h2{font-family:'Cinzel',serif;font-size:1.8rem;margin-top:80px;border-bottom:1px solid #333;} p{margin-bottom:1.2rem;text-indent:4rem;}</style></head><body><h1>${title}</h1>`;
+                res = `<html><head><meta charset="UTF-8"><style>body{background:#917e5d;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:60px 40px;line-height:1.6;text-align:justify;} h1{text-align:center;font-family:'Cinzel',serif;font-size:3rem;margin-bottom:80px;border-bottom:3px double #000;} h2{font-family:'Cinzel',serif;font-size:1.8rem;margin-top:80px;border-bottom:1px solid #333;} p{margin-bottom:1.2rem;text-indent:4rem;}</style></head><body><h1>${title}</h1>`;
                 document.querySelectorAll('.chapter-card').forEach(card => {
                     const chTitle = card.querySelector('.ch-title-input').value;
                     const text = card.querySelector('.ch-content-input').value;
@@ -286,6 +273,13 @@
             a.download = `${title}_Full.${format}`; a.click();
         }
 
+        function clearAllData() { if(confirm("Hapus draf?")) { localStorage.removeItem('tebe_v15_final_classic'); location.reload(); } }
+
         window.onload = () => {
             const savedKey = localStorage.getItem('tebe_key_v15');
-            if (savedKey) { docume
+            if (savedKey) { document.getElementById('apiKey').value = savedKey; checkAndSaveApi(); }
+            loadDraft();
+        };
+    </script>
+</body>
+</html>
