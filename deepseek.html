@@ -19,6 +19,8 @@
         .sidebar-footer-spacer { height: 160px; width: 100%; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .shimmer { background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
 <body class="flex flex-col md:flex-row min-h-screen">
@@ -49,14 +51,14 @@
             <div class="space-y-2">
                 <span class="text-[10px] font-black text-gray-500 uppercase">2. Struktur</span>
                 <div class="flex items-center justify-between p-2 input-dark">
-                    <span class="text-[10px]">Target Bab:</span>
+                    <span class="text-[10px]">Jumlah Bab:</span>
                     <input type="number" id="chapterCount" value="3" class="w-10 bg-transparent text-center font-bold gold-text outline-none">
                 </div>
                 <button type="button" onclick="planNovel()" id="btnPlan" class="w-full py-3 bg-blue-900 text-white text-[10px] font-bold rounded-lg border border-blue-500 shadow-lg">RANCANG ALUR</button>
             </div>
 
-            <div class="space-y-3 pt-4 border-t border-gray-800">
-                <button onclick="downloadAll('html')" class="w-full py-2 border border-[#c5a059] gold-text text-[10px] font-bold rounded hover:bg-[#c5a059]/10">SIMPAN FULL .HTML</button>
+            <div class="space-y-3 pt-4 border-t border-gray-800 text-center">
+                <button onclick="downloadAll()" class="w-full py-2 border border-[#c5a059] gold-text text-[10px] font-bold rounded hover:bg-[#c5a059]/10">SIMPAN FULL NOVEL (.HTML)</button>
             </div>
             
             <div class="sidebar-footer-spacer"></div>
@@ -67,7 +69,7 @@
         <div id="mainPlaceholder" class="h-full flex flex-col items-center justify-center text-center">
             <div class="p-10 border border-gray-900 rounded-[2.5rem] max-w-lg w-full bg-[#111]/30">
                 <h2 class="text-4xl font-bold gold-text mb-4 novel-font">Sanctum Tamroni</h2>
-                <p class="text-gray-400 text-sm novel-font italic">"DeepSeek Anti-Error: Sistem ekstraksi data ditingkatkan untuk menangani model R1."</p>
+                <p class="text-gray-400 text-sm novel-font italic">"DeepSeek Anti-Error: Sistem ekstraksi data ditingkatkan untuk menangani model R1 secara agresif."</p>
             </div>
         </div>
         <div id="novelWorkspace" class="hidden space-y-10 max-w-4xl mx-auto">
@@ -80,12 +82,16 @@
     </div>
 
     <script>
+        // Logika Hubungkan & Deteksi Model
         async function checkAndSaveApi() {
             const key = document.getElementById('apiKey').value;
+            const btn = document.getElementById('btnCheck');
             if(!key) return alert("Isi API Key!");
-            document.getElementById('btnCheck').innerText = "MENYAMBUNG...";
+            btn.innerText = "MENYAMBUNG...";
             try {
-                const res = await fetch('https://api.deepseek.com/models', { headers: { 'Authorization': `Bearer ${key}` } });
+                const res = await fetch('https://api.deepseek.com/models', { 
+                    headers: { 'Authorization': `Bearer ${key}` } 
+                });
                 const data = await res.json();
                 if(data.data) {
                     localStorage.setItem('tebe_ds_full_key', key);
@@ -93,10 +99,10 @@
                     const select = document.getElementById('modelSelect');
                     select.innerHTML = data.data.map(m => `<option value="${m.id}">${m.id === 'deepseek-reasoner' ? 'DeepSeek-R1 (Pro)' : (m.id === 'deepseek-chat' ? 'DeepSeek-V3 (Fast)' : m.id.toUpperCase())}</option>`).join('');
                     document.getElementById('engineWrapper').classList.remove('hidden');
-                    document.getElementById('btnCheck').innerText = "CONNECTED";
-                    document.getElementById('btnCheck').className = "w-full py-2 bg-green-800 text-white text-xs font-bold rounded";
+                    btn.innerText = "CONNECTED";
+                    btn.className = "w-full py-2 bg-green-800 text-white text-xs font-bold rounded";
                 }
-            } catch (e) { alert("Gagal koneksi. Cek Key atau Jaringan."); document.getElementById('btnCheck').innerText = "HUBUNGKAN API"; }
+            } catch (e) { alert("Gagal koneksi. Cek Key atau Jaringan (CORS)."); btn.innerText = "HUBUNGKAN API"; }
         }
 
         async function callAI(prompt) {
@@ -105,10 +111,16 @@
             const res = await fetch('https://api.deepseek.com/chat/completions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-                body: JSON.stringify({ model: model, messages: [{role: "user", content: prompt}], temperature: 0.6 })
+                body: JSON.stringify({ 
+                    model: model, 
+                    messages: [
+                        {role: "system", content: "Anda adalah penulis profesional. Berikan hasil murni sesuai format tanpa penjelasan tambahan."},
+                        {role: "user", content: prompt}
+                    ], 
+                    temperature: 0.6 
+                })
             });
             const data = await res.json();
-            if(!data.choices) throw new Error("No response");
             return data.choices[0].message.content;
         }
 
@@ -117,17 +129,20 @@
             const title = document.getElementById('novelTitle').value || "Karya Tebe";
             btn.innerText = "MERANCANG..."; btn.disabled = true;
 
-            const prompt = `Buat kerangka novel. Judul: ${title}. Ide: ${document.getElementById('storyIdea').value}. HANYA BERIKAN JSON MURNI TANPA PENJELASAN. Format: [{"label":"Bab 1","judul":"...","ringkasan":"..."}]`;
+            const prompt = `Buat kerangka novel. Judul: ${title}. Ide: ${document.getElementById('storyIdea').value}. 
+            WAJIB BERIKAN DALAM FORMAT JSON BERIKUT: [{"label":"Bab 1","judul":"...","ringkasan":"..."}]`;
 
             try {
                 let raw = await callAI(prompt);
-                // LOGIKA PEMBERSIH EKSTRA: Mencari karakter [ sampai ]
-                let jsonMatch = raw.match(/\[\s*{[\s\S]*}\s*\]/);
-                if (!jsonMatch) throw new Error("JSON not found");
-                renderWorkspace(JSON.parse(jsonMatch[0]), title);
+                // LOGIKA ANTI-ERROR: Mencari JSON di dalam tumpukan teks penjelasan
+                const firstBracket = raw.indexOf('[');
+                const lastBracket = raw.lastIndexOf(']');
+                if (firstBracket === -1 || lastBracket === -1) throw new Error("JSON tidak ditemukan");
+                
+                const jsonPart = raw.substring(firstBracket, lastBracket + 1);
+                renderWorkspace(JSON.parse(jsonPart), title);
             } catch (e) { 
-                console.error(e);
-                alert("DeepSeek gagal memberikan format JSON. Klik RANCANG sekali lagi."); 
+                alert("DeepSeek gagal memberikan format. Coba klik RANCANG lagi atau gunakan model V3 (Chat) untuk tahap ini."); 
             } finally { btn.innerText = "RANCANG ALUR"; btn.disabled = false; }
         }
 
@@ -147,27 +162,30 @@
                         </div>
                         <button onclick="generateChapter(${i})" class="h-fit bg-white text-black px-6 py-2 rounded-full text-[10px] font-black hover:bg-[#c5a059]">TULIS</button>
                     </div>
-                    <textarea id="content-ch-${i}" rows="12" class="w-full p-4 input-dark novel-font text-lg leading-relaxed border-none resize-none" placeholder="Narasi..."></textarea>
+                    <textarea id="content-ch-${i}" rows="15" class="w-full p-4 input-dark novel-font text-lg leading-relaxed border-none resize-none" placeholder="Narasi..."></textarea>
                 </div>
             `).join('');
         }
 
         async function generateChapter(i) {
             const textArea = document.getElementById(`content-ch-${i}`);
-            textArea.value = "DeepSeek sedang merangkai kata...";
-            const prompt = `Tulis isi novel murni. Judul Bab: ${document.getElementById(`title-ch-${i}`).value}. Alur: ${document.getElementById(`summary-ch-${i}`).value}. Gaya: ${document.getElementById('style').value}. Minimal 1200 kata.`;
+            textArea.value = "DeepSeek sedang merangkai narasi panjang...";
+            textArea.classList.add('shimmer');
+            const prompt = `Tulis isi novel murni. Judul Bab: ${document.getElementById(`title-ch-${i}`).value}. Alur: ${document.getElementById(`summary-ch-${i}`).value}. Gaya: ${document.getElementById('style').value}. Target: 1500 kata.`;
             try { 
                 let raw = await callAI(prompt);
+                // Buang tag <think> jika ada
                 textArea.value = raw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
-            } catch (e) { textArea.value = "Error: Koneksi terputus."; }
+            } catch (e) { textArea.value = "Koneksi terputus. Klik tulis lagi."; }
+            finally { textArea.classList.remove('shimmer'); }
         }
 
-        function downloadAll(format) {
+        function downloadAll() {
             const title = document.getElementById('novelTitle').value || 'TebeStory';
             const texts = document.querySelectorAll('[id^="content-ch-"]');
             const titles = document.querySelectorAll('[id^="title-ch-"]');
             let res = `<html><head><meta charset="UTF-8"><style>body{background:#eed9b5;background-image:url('https://www.transparenttextures.com/patterns/paper-fibers.png');color:#000;font-family:'Crimson Pro',serif;max-width:800px;margin:auto;padding:80px 40px;line-height:2.2;text-align:justify;} h1{text-align:center;font-family:'Cinzel',serif;font-size:3.5rem;margin-bottom:120px;border-bottom:3px double #000;padding-bottom:20px;text-transform:uppercase;} h2{font-family:'Cinzel',serif;font-size:2rem;margin-top:150px;border-bottom:1px solid #333;padding-bottom:10px;} p{margin-bottom:1.8rem;text-indent:4rem;}</style></head><body><h1>${title}</h1>`;
-            titles.forEach((t, i) => res += `<div><h2>${t.value}</h2>${texts[i].value.split('\n').filter(p=>p.trim()!="").map(p=>`<p>${p.trim()}</p>`).join('')}<div class="ornament">❦</div></div>`);
+            titles.forEach((t, i) => res += `<div><h2>${t.value}</h2>${texts[i].value.split('\n').filter(p=>p.trim()!="").map(p=>`<p>${p.trim()}</p>`).join('')}<div style="text-align:center;margin:80px 0;font-size:2rem;">❦</div></div>`);
             res += "</body></html>";
             const blob = new Blob([res], { type: 'text/html' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${title}_Full.html`; a.click();
@@ -175,3 +193,4 @@
     </script>
 </body>
 </html>
+
