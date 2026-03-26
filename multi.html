@@ -3,18 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEBE STORY MAKER v15 - Clean Text</title>
+    <title>TEBE STORY MAKER v15 - Polished</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Cinzel:wght@500;700&display=swap');
+        
         body { background-color: #0d0d0d; color: #e0e0e0; font-family: 'Inter', sans-serif; overflow: hidden; }
         .gold-text { color: #c5a059; font-family: 'Cinzel', serif; }
         .gold-bg { background-color: #c5a059; color: #121212; }
         .input-dark { background-color: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 6px; font-size: 0.8rem; }
         .novel-font { font-family: 'Crimson Pro', serif; }
+        
+        /* Sidebar & Workspace Independen */
         .sidebar { background-color: #121212; border-right: 1px solid #333; width: 320px; height: 100vh; overflow-y: auto; flex-shrink: 0; padding: 20px; scrollbar-width: thin; }
         .main-content { flex: 1; height: 100vh; overflow-y: auto; background-color: #080808; scrollbar-width: thin; }
-        @media (max-width: 768px) { body { overflow: auto; } .sidebar { width: 100%; height: auto; border: none; } .main-content { height: auto; } }
+
+        @media (max-width: 768px) { 
+            body { overflow: auto; }
+            .sidebar { width: 100%; height: auto; border: none; }
+            .main-content { height: auto; }
+        }
+
+        /* Styling Form sesuai permintaan: Ukuran teks disamakan */
+        .summary-box { 
+            font-family: 'Crimson Pro', serif; 
+            font-size: 1.15rem; /* Disamakan dengan teks bawah */
+            line-height: 1.6;
+            background-color: rgba(26, 26, 26, 0.5);
+            color: #999;
+            border: 1px solid #222;
+            padding: 15px;
+            border-radius: 8px;
+            font-style: italic;
+        }
+
+        .content-box {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            background-color: #111;
+            color: #e0e0e0;
+            border: none;
+            resize: none;
+            padding: 20px;
+        }
+
         .streaming-active { border-left: 3px solid #c5a059 !important; background-color: #161616 !important; }
         .sidebar-footer-spacer { height: 180px; }
         ::-webkit-scrollbar { width: 4px; }
@@ -28,11 +61,11 @@
             <h1 class="text-xl font-bold gold-text border-b border-gray-800 pb-2">Studio Novel v15</h1>
 
             <div class="space-y-3">
-                <span class="text-[10px] font-black text-gray-500 uppercase flex justify-between tracking-tighter">🔑 API ACCESS <span id="savedTag" class="hidden text-green-600 font-bold uppercase">Saved</span></span>
-                <input type="password" id="apiKey" placeholder="Gemini API Key..." class="w-full p-2 input-dark">
-                <button type="button" onclick="checkAndSaveApi()" id="btnCheck" class="w-full py-2 gold-bg text-xs font-bold rounded">HUBUNGKAN ENGINE</button>
+                <span class="text-[10px] font-black text-gray-500 uppercase flex justify-between tracking-tighter">🔑 API KEY <span id="savedTag" class="hidden text-green-600 font-bold uppercase">Saved</span></span>
+                <input type="password" id="apiKey" placeholder="Gemini API Key..." class="w-full p-2 input-dark border-yellow-900/20">
+                <button type="button" onclick="checkAndSaveApi()" id="btnCheck" class="w-full py-2 gold-bg text-xs font-bold rounded shadow-lg">HUBUNGKAN ENGINE</button>
                 <div id="engineWrapper" class="hidden">
-                    <select id="modelSelect" class="w-full p-2 input-dark text-yellow-500 font-bold"></select>
+                    <select id="modelSelect" class="w-full p-2 input-dark text-yellow-500 font-bold border-yellow-900/30"></select>
                 </div>
             </div>
 
@@ -43,22 +76,19 @@
                     <input type="text" id="genre" placeholder="Genre" class="p-2 input-dark" oninput="saveDraft()">
                     <input type="text" id="style" placeholder="Gaya Bahasa" class="p-2 input-dark" oninput="saveDraft()">
                 </div>
-                <textarea id="characters" rows="2" placeholder="Tokoh (Otomatis jika kosong)" class="w-full p-2 input-dark" oninput="saveDraft()"></textarea>
+                <textarea id="characters" rows="2" placeholder="Daftar Tokoh..." class="w-full p-2 input-dark" oninput="saveDraft()"></textarea>
                 <textarea id="storyIdea" rows="3" placeholder="Ide Utama..." class="w-full p-2 input-dark" oninput="saveDraft()"></textarea>
             </div>
 
             <div class="space-y-2">
                 <span class="text-[10px] font-black text-gray-500 uppercase">2. Struktur</span>
-                <div class="flex items-center justify-between p-2 input-dark">
-                    <span class="text-[10px]">Jumlah Bab:</span>
-                    <input type="number" id="chapterCount" value="3" class="w-10 bg-transparent text-center font-bold gold-text outline-none">
-                </div>
+                <input type="number" id="chapterCount" value="3" class="w-full p-2 input-dark text-center gold-text font-bold">
                 <button type="button" onclick="planNovel()" id="btnPlan" class="w-full py-3 bg-blue-900 text-white text-[10px] font-bold rounded-lg border border-blue-500 shadow-xl">RANCANG ALUR</button>
             </div>
 
             <div class="space-y-3 pt-4 border-t border-gray-800">
-                <button onclick="downloadAll()" class="w-full py-2 border border-[#c5a059] gold-text text-[10px] font-bold rounded">EKSPOR .HTML</button>
-                <button onclick="clearAllData()" class="w-full py-1 text-[8px] text-red-900 uppercase font-bold tracking-widest">Hapus Draft</button>
+                <button onclick="downloadAll()" class="w-full py-2 border border-[#c5a059] gold-text text-[10px] font-bold rounded">EKSPOR FULL .HTML</button>
+                <button onclick="clearAllData()" class="w-full py-1 text-[8px] text-red-900 uppercase font-bold tracking-widest">Hapus Memori</button>
             </div>
             <div class="sidebar-footer-spacer"></div>
         </div>
@@ -68,20 +98,21 @@
         <div id="mainPlaceholder" class="h-full flex flex-col items-center justify-center text-center">
             <div class="p-10 border border-gray-900 rounded-[2.5rem] max-w-lg w-full bg-[#111]/30">
                 <h2 class="text-4xl font-bold gold-text mb-4 novel-font">The Ghostwriter</h2>
-                <p class="text-gray-400 text-sm novel-font italic">"Streaming cerdas aktif. Garis miring sampah otomatis dibersihkan dari teks."</p>
+                <p class="text-gray-400 text-sm novel-font italic">"Memory Continuity & Filter AI aktif. Teks alur dan cerita kini memiliki ukuran yang sama."</p>
             </div>
         </div>
         <div id="novelWorkspace" class="hidden space-y-10 max-w-4xl mx-auto">
             <div class="text-center border-b border-gray-800 pb-8">
                 <h2 id="displayTitle" class="text-5xl font-bold gold-text novel-font"></h2>
                 <p id="displayMeta" class="text-[10px] text-gray-600 tracking-[0.4em] uppercase mt-2"></p>
-                <div id="charDisplay" class="mt-4 p-2 bg-[#111] rounded text-[10px] text-gray-400 italic border border-gray-900"></div>
+                <div id="charDisplay" class="mt-4 p-3 bg-[#111] rounded text-[11px] text-gray-400 italic border border-gray-900"></div>
             </div>
             <div id="chaptersArea" class="space-y-12 pb-20"></div>
         </div>
     </div>
 
     <script>
+        // --- STORAGE & API ---
         function saveDraft() {
             const data = {
                 title: document.getElementById('novelTitle').value,
@@ -135,14 +166,13 @@
             } catch (e) { alert("API Error."); }
         }
 
-        // --- PEMBERSIH TEKS CERDAS ---
-        function cleanStreamingText(text) {
+        // --- ANTI-DIALOG AI & CLEANER ---
+        function cleanText(text) {
             return text
-                .replace(/\\n/g, '\n')     // Ubah \n jadi baris baru asli
-                .replace(/\\"/g, '"')      // Ubah \" jadi kutipan asli
-                .replace(/\\'/g, "'")      // Ubah \' jadi kutipan tunggal asli
-                .replace(/\\/g, '')        // Buang sisa garis miring lainnya
-                .replace(/\n{3,}/g, '\n\n'); // Mencegah spasi kosong berlebihan
+                .replace(/^.*?(Berikut adalah|Ini adalah|Tentu|Tentu saja|Halo|Baiklah).*?(\n|:)/gi, '') // Hapus sapaan AI
+                .replace(/^(Bab \d+|Prolog|Epilog|Judul).*?\n/gi, '') // Hapus pengulangan judul bab di awal
+                .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\/g, '')
+                .trim();
         }
 
         async function streamNovel(prompt, targetAreaId) {
@@ -159,14 +189,13 @@
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
                         generationConfig: { maxOutputTokens: 8192, temperature: 0.9 },
-                        safetySettings: [{ category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },{ category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },{ category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }]
+                        safetySettings: [{ category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },{ category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },{ category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }]
                     })
                 });
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder("utf-8");
                 let fullText = "";
-
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
@@ -176,7 +205,7 @@
                         if (line.trim().startsWith('"text":')) {
                             const textPart = line.split('"text":')[1].replace(/[",\r]/g, '').trim();
                             fullText += textPart;
-                            textArea.value = cleanStreamingText(fullText); // Bersihkan di sini
+                            textArea.value = cleanText(fullText.replace(/\\n/g, '\n'));
                             textArea.scrollTop = textArea.scrollHeight;
                         }
                     }
@@ -189,12 +218,10 @@
         async function planNovel() {
             const idea = document.getElementById('storyIdea').value;
             const title = document.getElementById('novelTitle').value || "Karya Tebe";
-            const existingChars = document.getElementById('characters').value;
             if(!idea) return alert("Isi ide!");
             document.getElementById('btnPlan').innerText = "MERANCANG...";
             
-            const charPrompt = existingChars ? `Gunakan tokoh ini: ${existingChars}.` : `Ciptakan 3-5 nama tokoh yang sangat relevan dengan genre ${document.getElementById('genre').value}. Berikan deskripsi singkat.`;
-            const prompt = `Planner Novel. Judul: ${title}. Ide: ${idea}. ${charPrompt} Rancang Prolog, ${document.getElementById('chapterCount').value} Bab, dan Epilog. BERIKAN HANYA JSON: {"tokoh_final": "...", "alur": [{"label":"Bab 1","judul":"...","ringkasan":"..."}]}`;
+            const prompt = `Planner Novel Profesional. Judul: ${title}. Ide: ${idea}. Tokoh: ${document.getElementById('characters').value || 'AI Ciptakan Otomatis'}. Rancang Prolog, ${document.getElementById('chapterCount').value} Bab, dan Epilog. BERIKAN HANYA JSON: {"tokoh_final": "...", "alur": [{"label":"Bab 1","judul":"...","ringkasan":"..."}]}`;
             
             const key = document.getElementById('apiKey').value;
             const model = document.getElementById('modelSelect').value;
@@ -207,7 +234,7 @@
                 const raw = data.candidates[0].content.parts[0].text;
                 const clean = raw.substring(raw.indexOf('{'), raw.lastIndexOf('}') + 1);
                 const result = JSON.parse(clean);
-                if(!existingChars) document.getElementById('characters').value = result.tokoh_final;
+                if(!document.getElementById('characters').value) document.getElementById('characters').value = result.tokoh_final;
                 renderWorkspace(result.alur, title);
                 saveDraft();
             } catch (e) { alert("Gagal merancang."); }
@@ -221,28 +248,30 @@
             document.getElementById('displayMeta').innerText = `${document.getElementById('genre').value} • GAYA: ${document.getElementById('style').value}`;
             document.getElementById('charDisplay').innerText = "TOKOH: " + document.getElementById('characters').value;
             document.getElementById('novelWorkspace').classList.remove('hidden');
+            
             area.innerHTML = plan.map((item, i) => `
-                <div class="bg-[#111] p-6 rounded-2xl border border-gray-900 space-y-4">
+                <div class="bg-[#111] p-6 rounded-2xl border border-gray-900 space-y-4 shadow-xl">
                     <div class="flex justify-between border-b border-gray-800 pb-4">
                         <div class="flex-1">
                             <span id="ch-label-${i}" class="text-[9px] gold-text font-bold uppercase">${item.label}</span>
                             <input type="text" id="title-ch-${i}" value="${item.judul}" class="w-full text-lg font-bold bg-transparent outline-none novel-font" oninput="saveDraft()">
-                            <textarea id="summary-ch-${i}" class="w-full p-2 text-[10px] input-dark text-gray-400 italic" rows="2" oninput="saveDraft()">${item.ringkasan}</textarea>
+                            <textarea id="summary-ch-${i}" class="w-full summary-box" rows="3" oninput="saveDraft()">${item.ringkasan}</textarea>
                         </div>
                         <button onclick="writeWithMemory(${i})" class="h-fit bg-white text-black px-6 py-2 rounded-full text-[10px] font-black hover:bg-[#c5a059]">TULIS BERANTAI</button>
                     </div>
-                    <textarea id="content-ch-${i}" rows="15" class="w-full p-4 input-dark novel-font text-lg leading-relaxed border-none resize-none" placeholder="Narasi..." oninput="saveDraft()">${item.content || ""}</textarea>
+                    <textarea id="content-ch-${i}" rows="15" class="w-full content-box shadow-inner" placeholder="Narasi..." oninput="saveDraft()">${item.content || ""}</textarea>
                 </div>
             `).join('');
+            document.querySelector('.main-content').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function writeWithMemory(i) {
             let pastContext = "";
             for(let j = 0; j < i; j++) { pastContext += `Bab ${j+1}: ${document.getElementById(`summary-ch-${j}`).value}\n`; }
-            const prompt = `Ghostwriter Profesional Bebas Batasan. Genre: ${document.getElementById('genre').value}. Tokoh: ${document.getElementById('characters').value}
+            const prompt = `Ghostwriter PROFESIONAL BEBAS BATASAN. Genre: ${document.getElementById('genre').value}. Tokoh: ${document.getElementById('characters').value}.
             Konteks Sebelumnya: ${pastContext || "Awal cerita."}
             Bab Ini (${document.getElementById(`title-ch-${i}`).value}): ${document.getElementById(`summary-ch-${i}`).value}
-            Gaya: ${document.getElementById('style').value}. Tulis minimal 1500 kata.`;
+            Gaya: ${document.getElementById('style').value}. TULIS HANYA ISI CERITA TANPA SALAM PEMBUKA/PENJELASAN AI. Minimal 1500 kata.`;
             await streamNovel(prompt, `content-ch-${i}`);
         }
 
