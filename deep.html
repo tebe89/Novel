@@ -2,524 +2,143 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>DeepSeek Chatbot — API Manual</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek Chatbot - dengan Proxy Manual</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(145deg, #f1f5f9 0%, #e6edf4 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-        }
-
-        /* main card container */
-        .chat-app {
-            max-width: 1300px;
-            width: 100%;
-            height: 90vh;
-            background: rgba(255,255,255,0.75);
-            backdrop-filter: blur(2px);
-            border-radius: 2rem;
-            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.5);
-        }
-
-        /* header */
-        .header {
-            background: #0c1b2f;
-            color: white;
-            padding: 1rem 1.8rem;
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            border-bottom: 1px solid #2d3e5a;
-        }
-        .title h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: -0.3px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .title h1 small {
-            font-size: 0.75rem;
-            background: #1e3a5f;
-            padding: 4px 8px;
-            border-radius: 40px;
-            font-weight: normal;
-        }
-        .api-status {
-            background: #0f2a3b;
-            padding: 0.3rem 1rem;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .api-status span {
-            color: #cbd5e6;
-        }
-        .badge-key {
-            background: #1e3a5f;
-            padding: 4px 10px;
-            border-radius: 24px;
-            font-family: monospace;
-            font-size: 0.7rem;
-        }
-
-        /* main layout: chat + settings panel */
-        .main-layout {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* chat area */
-        .chat-container {
-            flex: 3;
-            display: flex;
-            flex-direction: column;
-            background: #f8fafc;
-            overflow: hidden;
-        }
-
-        .messages-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1.5rem 1.8rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            scroll-behavior: smooth;
-        }
-
-        /* message bubbles */
-        .message {
-            display: flex;
-            gap: 12px;
-            max-width: 85%;
-            animation: fadeSlideUp 0.2s ease;
-        }
-        .message.user {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-        .message.assistant {
-            align-self: flex-start;
-        }
-        .avatar {
-            width: 36px;
-            height: 36px;
-            background: #e2e8f0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-        .message.user .avatar {
-            background: #0c4e6e;
-            color: white;
-        }
-        .message.assistant .avatar {
-            background: #1e293b;
-            color: white;
-        }
-        .bubble {
-            background: white;
-            padding: 0.85rem 1.2rem;
-            border-radius: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.05);
-            line-height: 1.45;
-            font-size: 0.95rem;
-            color: #0f172a;
-            word-break: break-word;
-            border: 1px solid #e9eef3;
-        }
-        .message.user .bubble {
-            background: #0f2c3f;
-            color: white;
-            border: none;
-        }
-        .bubble p {
-            margin: 0;
-        }
-        .bubble pre {
-            background: #1e293b;
-            color: #e2e8f0;
-            padding: 0.75rem;
-            border-radius: 12px;
-            overflow-x: auto;
-            margin: 0.5rem 0;
-        }
-        .typing-indicator {
-            display: flex;
-            gap: 4px;
-            padding: 0.6rem 1rem;
-            background: #eef2ff;
-            width: fit-content;
-            border-radius: 28px;
-            align-items: center;
-        }
-        .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background: #4b6e8a;
-            border-radius: 50%;
-            animation: blink 1.2s infinite;
-        }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes blink {
-            0%, 60%, 100% { opacity: 0.3; transform: translateY(0);}
-            30% { opacity: 1; transform: translateY(-4px);}
-        }
-
-        /* input panel */
-        .input-panel {
-            background: white;
-            border-top: 1px solid #e2edf7;
-            padding: 1rem 1.5rem;
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-        }
-        .input-panel textarea {
-            flex: 1;
-            border: 1px solid #cbd5e1;
-            border-radius: 28px;
-            padding: 12px 18px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            resize: none;
-            outline: none;
-            transition: 0.2s;
-            max-height: 120px;
-        }
-        .input-panel textarea:focus {
-            border-color: #1e6f9f;
-            box-shadow: 0 0 0 2px rgba(30,111,159,0.2);
-        }
-        .input-panel button {
-            background: #0c4e6e;
-            border: none;
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .input-panel button:hover:not(:disabled) {
-            background: #0e3b54;
-            transform: scale(0.97);
-        }
-        .input-panel button:disabled {
-            background: #9aaebf;
-            cursor: not-allowed;
-        }
-
-        /* settings sidebar */
-        .settings-panel {
-            flex: 1;
-            background: #f1f5f9;
-            border-left: 1px solid #dce5ef;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            overflow-y: auto;
-            max-width: 320px;
-        }
-        .setting-card {
-            background: white;
-            border-radius: 1.25rem;
-            padding: 1rem 1.2rem;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-            border: 1px solid #e2edf2;
-        }
-        .setting-card h3 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 0.7rem;
-            color: #0f2b3b;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .setting-card input, .setting-card textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 16px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            background: #fefefe;
-        }
-        .setting-card textarea {
-            font-family: monospace;
-            font-size: 0.75rem;
-            resize: vertical;
-        }
-        .api-action {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-        .btn-secondary {
-            background: #e2e8f0;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .btn-danger {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-        .btn-primary {
-            background: #0c4e6e;
-            color: white;
-        }
-        .model-badge {
-            font-size: 0.7rem;
-            background: #eef2ff;
-            border-radius: 20px;
-            padding: 4px 10px;
-            display: inline-block;
-        }
-        hr {
-            margin: 8px 0;
-            border-color: #e2edf2;
-        }
-        .note {
-            font-size: 0.7rem;
-            color: #475569;
-            margin-top: 8px;
-        }
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(12px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-        @media (max-width: 780px) {
-            .main-layout { flex-direction: column; }
-            .settings-panel { max-width: 100%; border-left: none; border-top: 1px solid #dce5ef; max-height: 280px; }
-            .message { max-width: 95%; }
-            .chat-app { height: 95vh; }
-        }
-        .error-bubble {
-            background: #fff0f0;
-            border-left: 4px solid #e53e3e;
-        }
+        /* (sama seperti kode sebelumnya, atau gunakan yang sudah ada) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; padding: 1.5rem; }
+        .chat-app { max-width: 1300px; margin: 0 auto; background: white; border-radius: 2rem; overflow: hidden; box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3); display: flex; flex-direction: column; height: 90vh; }
+        .header { background: #0c1b2f; color: white; padding: 1rem 1.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .main-layout { display: flex; flex: 1; overflow: hidden; }
+        .chat-container { flex: 3; display: flex; flex-direction: column; background: #f8fafc; }
+        .messages-area { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+        .message { display: flex; gap: 12px; max-width: 85%; }
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
+        .bubble { background: white; padding: 0.85rem 1.2rem; border-radius: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .message.user .bubble { background: #0f2c3f; color: white; }
+        .input-panel { background: white; border-top: 1px solid #e2edf7; padding: 1rem; display: flex; gap: 12px; }
+        .input-panel textarea { flex: 1; border: 1px solid #cbd5e1; border-radius: 28px; padding: 12px 18px; resize: none; }
+        .input-panel button { background: #0c4e6e; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 40px; cursor: pointer; }
+        .settings-panel { flex: 1; background: #f1f5f9; border-left: 1px solid #dce5ef; padding: 1.5rem; overflow-y: auto; max-width: 320px; }
+        .setting-card { background: white; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
+        .setting-card input, .setting-card textarea { width: 100%; padding: 8px; border-radius: 12px; border: 1px solid #cbd5e1; }
+        .btn-secondary { background: #e2e8f0; border: none; padding: 6px 12px; border-radius: 30px; cursor: pointer; }
+        .error-bubble { background: #fee2e2; border-left: 4px solid #e53e3e; }
+        @media (max-width: 780px) { .main-layout { flex-direction: column; } .settings-panel { max-width: 100%; } }
     </style>
 </head>
 <body>
 <div class="chat-app">
     <div class="header">
-        <div class="title">
-            <h1>🤖 DeepSeek Chat <small>API Manual</small></h1>
-        </div>
-        <div class="api-status">
-            <span>🔑 Status:</span>
-            <span id="keyStatusDisplay" class="badge-key">Belum ada API Key</span>
-        </div>
+        <div><strong>🤖 DeepSeek Chat</strong> <small>API Manual + Proxy</small></div>
+        <div id="keyStatus">🔑 Status: <span>Belum ada key</span></div>
     </div>
-
     <div class="main-layout">
-        <!-- Chat area utama -->
         <div class="chat-container">
             <div class="messages-area" id="messagesContainer">
                 <div class="message assistant">
-                    <div class="avatar">🧠</div>
-                    <div class="bubble">
-                        <p>Halo! Saya adalah chatbot DeepSeek. 👋<br>
-                        Masukkan <strong>API Key</strong> kamu di panel sebelah kanan, lalu mulai bertanya. <br>
-                        Percakapan akan otomatis menggunakan konteks sebelumnya. Selamat mencoba!</p>
-                    </div>
+                    <div class="bubble">Masukkan API Key dan (opsional) endpoint proxy. Jika terkendala CORS, gunakan proxy lokal.</div>
                 </div>
             </div>
             <div class="input-panel">
-                <textarea id="userInput" rows="1" placeholder="Ketik pesan di sini... (Shift+Enter untuk newline, Enter kirim)" style="height: 48px;"></textarea>
-                <button id="sendBtn">✈️ Kirim</button>
+                <textarea id="userInput" rows="1" placeholder="Ketik pesan..."></textarea>
+                <button id="sendBtn">Kirim</button>
             </div>
         </div>
-
-        <!-- Settings panel: API key dan konfigurasi -->
         <div class="settings-panel">
             <div class="setting-card">
-                <h3>🔐 1. API Key DeepSeek</h3>
-                <input type="password" id="apiKeyInput" placeholder="sk-xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
-                <div class="api-action">
-                    <button id="saveApiKeyBtn" class="btn-secondary btn-primary">💾 Simpan Key</button>
-                    <button id="clearApiKeyBtn" class="btn-secondary btn-danger">🗑️ Hapus Key</button>
-                </div>
-                <div class="note">Dapatkan key di <a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com</a>. Key disimpan di localStorage.</div>
+                <h3>🔐 API Key</h3>
+                <input type="password" id="apiKeyInput" placeholder="sk-...">
+                <button id="saveApiKeyBtn" class="btn-secondary">Simpan Key</button>
+                <button id="clearApiKeyBtn" class="btn-secondary">Hapus Key</button>
             </div>
-
             <div class="setting-card">
-                <h3>⚙️ 2. Model & Pengaturan</h3>
-                <label style="font-size:0.75rem; color:#2c3e50;">Model ID</label>
-                <input type="text" id="modelSelect" value="deepseek-chat" placeholder="deepseek-chat / deepseek-coder">
-                <label style="font-size:0.75rem; margin-top: 8px; display:block;">Temperature (0-1)</label>
-                <input type="number" id="temperature" step="0.1" min="0" max="1" value="0.7">
-                <div class="note">DeepSeek-chat optimal untuk percakapan umum.</div>
+                <h3>🌐 API Endpoint</h3>
+                <input type="text" id="endpointInput" value="https://api.deepseek.com/v1/chat/completions">
+                <div class="note">Isi dengan URL proxy lokal jika menggunakan metode 1 (contoh: http://localhost:3000/api/deepseek)</div>
             </div>
-
             <div class="setting-card">
-                <h3>🧠 3. System Prompt</h3>
-                <textarea id="systemPrompt" rows="2">Anda adalah asisten AI yang membantu dan ramah bernama DeepSeek. Berikan jawaban yang informatif, akurat, dan sopan.</textarea>
-                <button id="resetSystemBtn" class="btn-secondary" style="margin-top: 8px; width:100%;">↻ Terapkan System Prompt & Reset Chat</button>
-            </div>
-
-            <div class="setting-card">
-                <h3>📋 4. Kontrol Chat</h3>
-                <button id="clearChatBtn" class="btn-secondary" style="width:100%;">🧹 Hapus Riwayat Chat</button>
-                <div class="note">Menghapus hanya pesan, system prompt tetap.</div>
+                <h3>⚙️ Model & System</h3>
+                <input type="text" id="modelInput" value="deepseek-chat">
+                <textarea id="systemPrompt" rows="2">Anda adalah asisten AI yang membantu.</textarea>
+                <button id="resetChatBtn" class="btn-secondary">Reset Chat</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // ---------- DOM Elements ----------
+    // Elemen
     const messagesContainer = document.getElementById('messagesContainer');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
     const apiKeyInput = document.getElementById('apiKeyInput');
     const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
     const clearApiKeyBtn = document.getElementById('clearApiKeyBtn');
-    const modelSelect = document.getElementById('modelSelect');
-    const temperatureInput = document.getElementById('temperature');
-    const systemPromptTextarea = document.getElementById('systemPrompt');
-    const resetSystemBtn = document.getElementById('resetSystemBtn');
-    const clearChatBtn = document.getElementById('clearChatBtn');
-    const keyStatusDisplay = document.getElementById('keyStatusDisplay');
+    const endpointInput = document.getElementById('endpointInput');
+    const modelInput = document.getElementById('modelInput');
+    const systemPrompt = document.getElementById('systemPrompt');
+    const resetChatBtn = document.getElementById('resetChatBtn');
+    const keyStatusSpan = document.querySelector('#keyStatus span');
 
-    // ---------- State ----------
-    let messages = [];        // array of {role, content}
+    let messages = []; // {role, content}
     let isLoading = false;
     let currentApiKey = '';
 
-    // Helper: load/save local storage
-    function loadApiKeyFromStorage() {
+    // Load key dari localStorage
+    function loadKey() {
         const stored = localStorage.getItem('deepseek_api_key');
         if (stored) {
             currentApiKey = stored;
             apiKeyInput.value = stored;
-            updateKeyStatus(true);
+            keyStatusSpan.innerText = '✅ Tersimpan';
         } else {
             currentApiKey = '';
-            apiKeyInput.value = '';
-            updateKeyStatus(false);
+            keyStatusSpan.innerText = '❌ Belum ada';
         }
     }
 
-    function updateKeyStatus(hasKey) {
-        if (hasKey && currentApiKey.length > 6) {
-            const masked = currentApiKey.slice(0, 6) + '••••••' + currentApiKey.slice(-4);
-            keyStatusDisplay.innerText = `✅ ${masked}`;
-            keyStatusDisplay.style.background = '#1e5631';
+    function saveKey() {
+        const newKey = apiKeyInput.value.trim();
+        if (newKey) {
+            localStorage.setItem('deepseek_api_key', newKey);
+            currentApiKey = newKey;
+            keyStatusSpan.innerText = '✅ Tersimpan';
+            addSystemMessage('API Key disimpan.');
         } else {
-            keyStatusDisplay.innerText = '⚠️ Belum ada API Key';
-            keyStatusDisplay.style.background = '#4a2e2e';
+            addSystemMessage('Key kosong, tidak disimpan.', true);
         }
     }
 
-    function saveApiKeyToStorage(key) {
-        if (key && key.trim().startsWith('sk-')) {
-            localStorage.setItem('deepseek_api_key', key.trim());
-            currentApiKey = key.trim();
-            updateKeyStatus(true);
-            addSystemMessageNotif('🔑 API Key berhasil disimpan! Sekarang kamu bisa chat.');
-        } else if (key && key.trim().length > 0) {
-            // tetap simpan walau tidak diawali sk- (untuk fleksibilitas)
-            localStorage.setItem('deepseek_api_key', key.trim());
-            currentApiKey = key.trim();
-            updateKeyStatus(true);
-            addSystemMessageNotif('🔑 API Key tersimpan (validasi format tidak ketat). Pastikan key benar dari DeepSeek.');
-        } else {
-            addSystemMessageNotif('❌ API Key kosong, simpan gagal.');
-        }
-    }
-
-    function clearApiKey() {
+    function clearKey() {
         localStorage.removeItem('deepseek_api_key');
         currentApiKey = '';
         apiKeyInput.value = '';
-        updateKeyStatus(false);
-        addSystemMessageNotif('🗝️ API Key telah dihapus. Masukkan key baru untuk menggunakan chatbot.');
+        keyStatusSpan.innerText = '❌ Belum ada';
+        addSystemMessage('API Key dihapus.');
     }
 
-    // Menampilkan notifikasi sementara di chat (system-like)
-    function addSystemMessageNotif(text, isError = false) {
-        const notifDiv = document.createElement('div');
-        notifDiv.classList.add('message', 'assistant');
-        notifDiv.innerHTML = `
-            <div class="avatar">📢</div>
-            <div class="bubble" style="background: ${isError ? '#ffe6e6' : '#e9f4fe'}; color:#2d3748;">
-                <p>${escapeHtml(text)}</p>
-            </div>
-        `;
-        messagesContainer.appendChild(notifDiv);
+    function addSystemMessage(text, isError = false) {
+        const div = document.createElement('div');
+        div.classList.add('message', 'assistant');
+        div.innerHTML = `<div class="bubble ${isError ? 'error-bubble' : ''}">${escapeHtml(text)}</div>`;
+        messagesContainer.appendChild(div);
         scrollToBottom();
-        // otomatis hilang setelah 5 detik? optional, biarkan saja sebagai informasi.
-        setTimeout(() => {
-            if(notifDiv.parentNode) notifDiv.remove();
-        }, 5000);
     }
 
-    // Escape HTML untuk keamanan
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-            return c;
-        });
+    function addMessageToChat(role, content) {
+        messages.push({ role, content });
+        renderMessages();
     }
 
-    // menampilkan pesan ke UI (tanpa menyimpan ulang ke array messages? fungsi render dari array messages saja)
     function renderMessages() {
         messagesContainer.innerHTML = '';
         for (let msg of messages) {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message', msg.role === 'user' ? 'user' : 'assistant');
-            const avatarIcon = msg.role === 'user' ? '👤' : '🤖';
-            msgDiv.innerHTML = `
-                <div class="avatar">${avatarIcon}</div>
-                <div class="bubble"><p>${escapeHtml(msg.content).replace(/\n/g, '<br>')}</p></div>
-            `;
-            messagesContainer.appendChild(msgDiv);
+            const div = document.createElement('div');
+            div.classList.add('message', msg.role === 'user' ? 'user' : 'assistant');
+            div.innerHTML = `<div class="bubble">${escapeHtml(msg.content).replace(/\n/g, '<br>')}</div>`;
+            messagesContainer.appendChild(div);
         }
         scrollToBottom();
     }
@@ -528,92 +147,53 @@
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // Menambahkan pesan ke array & render
-    function addMessageToChat(role, content) {
-        messages.push({ role, content });
-        renderMessages();
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
 
-    // reset chat (tanpa system prompt, nanti kita panggil ulang)
-    function resetChatHistory(keepSystemPrompt = true) {
-        // kita build ulang messages dengan system prompt terbaru
-        const systemContent = systemPromptTextarea.value.trim() || "Anda adalah asisten AI yang membantu.";
-        if (keepSystemPrompt) {
-            messages = [{ role: 'system', content: systemContent }];
-        } else {
-            messages = [];
-        }
-        // tambahkan welcome message sebagai assistant hanya untuk tampilan awal jika kosong
-        if (messages.length === 1 && messages[0].role === 'system') {
-            // kita bisa menambahkan pesan sambutan dari assistant
-            renderMessages();
-            addSystemMessageNotif('💬 Riwayat direset. System prompt baru diterapkan.');
-        } else {
-            renderMessages();
-        }
-        // jika tidak ada pesan sama sekali (keepSystemPrompt false), kita tambahkan pesan default assistant
-        if (messages.length === 0) {
-            addMessageToChat('assistant', 'Halo! Chat telah direset. Siap membantu dengan API DeepSeek.');
-        }
-    }
-
-    // membangun ulang system prompt berdasarkan textarea
-    function applySystemPromptAndReset() {
-        const newSystem = systemPromptTextarea.value.trim();
-        if (!newSystem) {
-            addSystemMessageNotif('System prompt kosong, menggunakan default.', true);
-            systemPromptTextarea.value = "Anda adalah asisten AI yang membantu dan ramah bernama DeepSeek. Berikan jawaban yang informatif, akurat, dan sopan.";
-        }
-        // hapus semua pesan, masukkan system prompt baru
-        const systemFinal = systemPromptTextarea.value.trim() || "Anda adalah asisten AI yang membantu dan ramah bernama DeepSeek. Berikan jawaban yang informatif, akurat, dan sopan.";
-        messages = [{ role: 'system', content: systemFinal }];
-        // tambahkan pesan sapa
-        renderMessages();
-        addMessageToChat('assistant', '✨ System prompt diperbarui. Mulai percakapan baru!');
-    }
-
-    // API call ke DeepSeek
-    async function sendMessageToDeepSeek(userMessageText) {
-        if (!currentApiKey || currentApiKey.trim() === '') {
-            addSystemMessageNotif('⚠️ API Key belum diisi. Silakan simpan API Key di panel kanan terlebih dahulu.', true);
+    async function sendToDeepSeek(userText) {
+        if (!currentApiKey) {
+            addSystemMessage('❌ API Key belum diisi. Simpan terlebih dahulu.', true);
             return false;
         }
 
-        // tambahkan pesan user ke array
-        addMessageToChat('user', userMessageText);
-        
-        // siapkan payload (pastikan system prompt ada di awal messages)
-        // Cek apakah sudah ada system prompt di messages? bila belum, inject dari textarea
-        const hasSystem = messages.some(m => m.role === 'system');
-        let messagesForAPI = [...messages];
-        if (!hasSystem) {
-            const sysContent = systemPromptTextarea.value.trim() || "Anda adalah asisten AI yang membantu.";
-            messagesForAPI.unshift({ role: 'system', content: sysContent });
+        addMessageToChat('user', userText);
+
+        // Pastikan ada system prompt di awal
+        const sysContent = systemPrompt.value.trim() || "Anda adalah asisten AI.";
+        if (messages.length === 0 || messages[0].role !== 'system') {
+            messages.unshift({ role: 'system', content: sysContent });
+        } else {
+            messages[0].content = sysContent;
         }
-        
-        // hapus kemungkinan pesan yang berlebihan? tidak perlu.
-        const model = modelSelect.value.trim() || "deepseek-chat";
-        let temperature = parseFloat(temperatureInput.value);
-        if (isNaN(temperature)) temperature = 0.7;
-        
-        // UI loading
+
+        const endpoint = endpointInput.value.trim();
+        if (!endpoint) {
+            addSystemMessage('Endpoint kosong. Isi URL API atau proxy.', true);
+            return false;
+        }
+
+        const model = modelInput.value.trim() || "deepseek-chat";
+
         isLoading = true;
         sendBtn.disabled = true;
         userInput.disabled = true;
-        
-        // tampilkan indikator mengetik
+
+        // Tampilkan indikator typing
         const typingDiv = document.createElement('div');
         typingDiv.classList.add('message', 'assistant');
+        typingDiv.innerHTML = `<div class="bubble">⏳ Mengetik...</div>`;
         typingDiv.id = 'typingIndicator';
-        typingDiv.innerHTML = `
-            <div class="avatar">🤖</div>
-            <div class="typing-indicator"><span></span><span></span><span></span></div>
-        `;
         messagesContainer.appendChild(typingDiv);
         scrollToBottom();
-        
+
         try {
-            const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -621,40 +201,38 @@
                 },
                 body: JSON.stringify({
                     model: model,
-                    messages: messagesForAPI.map(({ role, content }) => ({ role, content })),
-                    temperature: temperature,
-                    max_tokens: 2048,
-                    stream: false
+                    messages: messages.map(({ role, content }) => ({ role, content })),
+                    temperature: 0.7,
+                    max_tokens: 2048
                 })
             });
-            
-            // hapus indicator typing
+
+            // Hapus indikator
             const typingElem = document.getElementById('typingIndicator');
             if (typingElem) typingElem.remove();
-            
+
             if (!response.ok) {
-                let errorDetail = `HTTP ${response.status}`;
+                let errorMsg = `HTTP ${response.status}`;
                 try {
                     const errJson = await response.json();
-                    errorDetail = errJson.error?.message || JSON.stringify(errJson);
+                    errorMsg = errJson.error?.message || JSON.stringify(errJson);
                 } catch(e) {}
-                throw new Error(`API Error: ${errorDetail}`);
+                throw new Error(errorMsg);
             }
-            
+
             const data = await response.json();
-            const assistantReply = data.choices[0]?.message?.content || "Maaf, tidak ada respons dari model.";
-            
-            // tambahkan pesan asisten ke array
-            addMessageToChat('assistant', assistantReply);
+            const reply = data.choices[0]?.message?.content || "Tidak ada respons.";
+            addMessageToChat('assistant', reply);
             return true;
-            
         } catch (err) {
-            console.error(err);
             const typingElem = document.getElementById('typingIndicator');
             if (typingElem) typingElem.remove();
-            addSystemMessageNotif(`❌ Gagal terhubung ke DeepSeek: ${err.message}`, true);
-            // hapus pesan user yang baru ditambahkan agar konsisten? biarkan saja tapi beri notif error. 
-            // user bisa mencoba lagi
+
+            let errorText = err.message;
+            if (errorText.includes('Failed to fetch') || errorText.includes('NetworkError')) {
+                errorText = 'Gagal terhubung ke endpoint. Kemungkinan masalah CORS atau endpoint salah. Gunakan proxy lokal (lihat penjelasan di atas).';
+            }
+            addSystemMessage(`❌ Error: ${errorText}`, true);
             return false;
         } finally {
             isLoading = false;
@@ -663,71 +241,40 @@
             userInput.focus();
         }
     }
-    
-    // event send
+
     async function handleSend() {
         if (isLoading) {
-            addSystemMessageNotif('Tunggu, sedang memproses permintaan sebelumnya...', false);
+            addSystemMessage('Tunggu hingga respons selesai.', true);
             return;
         }
-        const message = userInput.value.trim();
-        if (!message) return;
+        const text = userInput.value.trim();
+        if (!text) return;
         userInput.value = '';
-        // reset tinggi textarea
-        userInput.style.height = '48px';
-        await sendMessageToDeepSeek(message);
+        await sendToDeepSeek(text);
     }
-    
-    // auto-resize textarea
-    function autoResizeTextarea() {
-        userInput.style.height = 'auto';
-        userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
-    }
-    
-    // inisialisasi awal: load key, set system prompt, reset chat (dengan system)
-    function init() {
-        loadApiKeyFromStorage();
-        
-        // muat system prompt dari storage opsional? kita set default dari textarea
-        // jika belum ada, bisa juga simpan ke localStorage untuk ingatan? tidak perlu, biarkan manual.
-        // reset chat dengan system prompt dari textarea
-        const initialSystem = systemPromptTextarea.value.trim();
-        messages = [{ role: 'system', content: initialSystem }];
-        // tambah pesan assistant sambutan (opsional)
+
+    function resetChat() {
+        const sys = systemPrompt.value.trim() || "Anda adalah asisten AI.";
+        messages = [{ role: 'system', content: sys }];
         renderMessages();
-        addMessageToChat('assistant', '👋 Siap membantu! Pastikan API Key sudah tersimpan. Tanyakan apa saja.');
-        
-        // event listeners
-        saveApiKeyBtn.addEventListener('click', () => {
-            const newKey = apiKeyInput.value.trim();
-            if (newKey) saveApiKeyToStorage(newKey);
-            else addSystemMessageNotif('Key tidak boleh kosong', true);
-        });
-        clearApiKeyBtn.addEventListener('click', () => {
-            clearApiKey();
-        });
-        sendBtn.addEventListener('click', handleSend);
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-            }
-        });
-        userInput.addEventListener('input', autoResizeTextarea);
-        clearChatBtn.addEventListener('click', () => {
-            // reset chat tapi pertahankan system prompt saat ini (dari textarea)
-            const sys = systemPromptTextarea.value.trim();
-            messages = [{ role: 'system', content: sys }];
-            renderMessages();
-            addMessageToChat('assistant', '🧹 Riwayat percakapan dibersihkan. Lanjutkan bertanya!');
-        });
-        resetSystemBtn.addEventListener('click', () => {
-            applySystemPromptAndReset();
-        });
+        addSystemMessage('Riwayat chat direset. System prompt tetap.');
     }
-    
-    // start aplikasi
-    init();
+
+    // Event listeners
+    saveApiKeyBtn.addEventListener('click', saveKey);
+    clearApiKeyBtn.addEventListener('click', clearKey);
+    sendBtn.addEventListener('click', handleSend);
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    });
+    resetChatBtn.addEventListener('click', resetChat);
+
+    // Inisialisasi
+    loadKey();
+    resetChat(); // inisialisasi dengan system prompt
 </script>
 </body>
 </html>
